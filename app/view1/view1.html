@@ -1,0 +1,147 @@
+<div id="mapContainer"></div>
+<div id="console">
+    <nav id="navbar" class="navbar navbar-inverse navbar-static-top ">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">
+                    <img alt="Brand" id="tubiao" src="/images/logo.png">
+                </a>
+            </div>
+        <button type="button" class="btn btn-default navbar-btn navbar-right btn-lg " data-toggle="modal"
+                data-target="#myModal">
+            <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="btn btn-default navbar-btn navbar-right btn-lg">
+            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+        </button>
+        </div>
+    </nav>
+    <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        模态框（Modal）标题
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    在这里添加一些文本
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <button type="button" class="btn btn-primary">
+                        提交更改
+                    </button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <div class="panel-group" id="accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
+                        data-target="#collapseOne" data-parent="accordion">供货商
+                </button>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">起点:</span>
+                        <input type="text" class="form-control" id="startPointSearch" placeholder="请输入关键字">
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">终点:</span>
+                        <input type="text" class="form-control" id="endPointSearch" placeholder="请输入关键字">
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">期限:</span>
+                        <input type="text" class="form-control" id="deadline" placeholder="请输入期限时长">
+                        <span class="input-group-addon">秒</span>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">剩余时间:</span>
+                        <input type="text" class="form-control" id="remainingTime" readonly="readonly">
+                        <span class="input-group-addon">秒</span>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">路径预计时间:</span>
+                        <input type="text" class="form-control" id="estimatedTime" readonly="readonly">
+                        <span class="input-group-addon">秒</span>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">起点经纬度:</span>
+                        <input type="text" class="form-control" id="reSearchOrigin" readonly="readonly">
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">终点经纬度:</span>
+                        <input type="text" class="form-control" id="reSearchDestination" readonly="readonly">
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-default" ng-click="doSearch()">搜索</button>
+                        <button type="button" class="btn btn-default" ng-click="doNavigation()">导航</button>
+                    </div>
+                    <!--<span style="display:inline-block;width:100px;text-align: center;"></span>-->
+                    <!--<input type="button" id="submitSearch" name="submitSearch" value="搜索" ng-click="doSearch()">-->
+                    <!--<input type="button" id="submitNavigation" name="submitNavigation" value="导航"-->
+                           <!--ng-click="doNavigation()">-->
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
+                        data-target="#collapseTwo" data-parent="accordion">船运公司
+                </button>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse">
+                <div class="panel-body">
+                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson
+                    cred nesciunt sapiente ea proident. Ad vegan excepteur butcher
+                    vice lomo.
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
+                        data-target="#collapseThree" data-parent="accordion">货运公司
+                </button>
+            </div>
+            <div id="collapseThree" class="panel-collapse collapse">
+                <div class="panel-body">
+                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson
+                    cred nesciunt sapiente ea proident. Ad vegan excepteur butcher
+                    vice lomo.
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
+                        data-target="#collapseFour" data-parent="accordion">目标客户
+                </button>
+            </div>
+            <div id="collapseFour" class="panel-collapse collapse">
+                <div class="panel-body">
+                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson
+                    cred nesciunt sapiente ea proident. Ad vegan excepteur butcher
+                    vice lomo.
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--<button type="button" class="btn btn-primary" data-toggle="collapse"-->
+    <!--data-target="#demo">-->
+    <!--简单的可折叠组件-->
+    <!--</button>-->
+
+    <!--<div id="demo" class="collapse in">-->
+    <!--Nihil anim keffiyeh helvetica, craft beer labore wes anderson-->
+    <!--cred nesciunt sapiente ea proident. Ad vegan excepteur butcher-->
+    <!--vice lomo.-->
+    <!--</div>-->
+</div>
