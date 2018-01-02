@@ -2,12 +2,12 @@
 
 // Declare app level module which depends on views, and components
 var App = angular.module('myApp', [
-  'ngRoute',
-  'myApp.view1',
-  'myApp.version'
-]).
-config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
-  $locationProvider.hashPrefix('!');
+    'ngRoute',
+    'myApp.view1',
+    'myApp.version',
+    'rt.debounce'
+]).config(['$locationProvider', '$routeProvider', function ($locationProvider, $routeProvider) {
+    $locationProvider.hashPrefix('!');
 
-  $routeProvider.otherwise({redirectTo: '/view1'});
+    $routeProvider.otherwise({redirectTo: '/view1'});
 }]);
