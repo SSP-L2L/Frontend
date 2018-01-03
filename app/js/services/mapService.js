@@ -259,8 +259,8 @@ App.service('MapService', function (MapFactory) {
     };
     this.doNavigation = function () {
         pathSimplifierIns.clearPathNavigators();
-        var sync4Search = false;
-        var sync4Expend = true;
+        var sync4Search = true;
+        var sync4Expend = false;
         totalTime = 0;
         count = 0;
         index = 0;
@@ -301,13 +301,13 @@ App.service('MapService', function (MapFactory) {
                             doSearch4Change();
                             sync4Search = false;
                         }
-                    }, 0);
+                    }, 1000);
                     setTimeout(function () {
                         if (sync4Expend) {
                             expandPathFlag = doExpand4Change();
                             sync4Expend = false;
                         }
-                    }, 0);
+                    }, 1000);
                 }
             }
             if (expandPathFlag)
@@ -394,7 +394,7 @@ App.service('MapService', function (MapFactory) {
             频繁search出bug原因：在于driving.search()中回调函数function(status,result)的异步执行
              */
             doExpand4Change = function () {
-                console.log("doExpend2执行");
+                console.log("doExpand4Change执行");
 
                 if (reSearchOrigin.distance(reSearchDestination) < 10) {
                     return false;
@@ -419,7 +419,7 @@ App.service('MapService', function (MapFactory) {
                 searchRemainingTime = searchRemainingTime - searchTimeData[index];
                 remainingTime = deadline - totalTime;
                 $("input[id='remainingTime']").val(remainingTime.toString());
-                console.log("doExpend2结束");
+                console.log("doExpand4Change结束");
                 sync4Search = true;
                 return true;
             };

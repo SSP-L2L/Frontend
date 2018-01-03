@@ -28,10 +28,10 @@ angular.module('myApp.view1', ['ngRoute'])
             params: {
                 processDefinitionKey: 'process'
             }
-        }
+        };
         var promise = VesselProcessService.GetProcessInstance(params);
         promise.then(function (data) {  // 调用承诺API获取数据 .resolve
-            console.log("promise : success ")
+            console.log("promise : success ");
             if (data.size != 0) {
                 console.log("监听到车流程实例");
                 $scope.wInst = data.data[0];
@@ -52,10 +52,9 @@ angular.module('myApp.view1', ['ngRoute'])
                 console.log("没有监听到流程实例！")
             }
         }, function (data) {  // 处理错误 .reject
-            console.error("promise : error")
+            console.error("promise : error");
         }).finally(function (data) {
             console.log("promise : test ");
         });
         // }, 2000);
-
     });
