@@ -1,11 +1,16 @@
 App.factory('MapFactory', function ($http) {
     // noinspection JSAnnotator
     return {
-        setDeadline: function () {
-            var remainingTime = $("input[id='deadline']").val();
-            $("input[id='remainingTime']").val(remainingTime.toString());
+        // setDeadline: function () {
+        //     var remainingTime = $("input[id='deadline']").val();
+        //     $("input[id='remainingTime']").val(remainingTime.toString());
+        //     return remainingTime;
+        // },
+        setDeadline: function (deadline) {
+            $("input[id='remainingTime']").val(deadline.toString());
             return remainingTime;
-        }, judgementTime: function (remainingTime, estimatedTime) {
+        }
+        , judgementTime: function (remainingTime, estimatedTime) {
             if (remainingTime >= estimatedTime) {
                 return true;
                 // doNavigation();
@@ -17,7 +22,7 @@ App.factory('MapFactory', function ($http) {
     }
 });
 
-App.service('MapService', function (MapFactory) {
+App.service('MapService', function (MapFactory,$http) {
     this.searchPathData = [];
     //路径距离（每段路段的长度）
     this.searchDistanceData = [];
@@ -204,17 +209,71 @@ App.service('MapService', function (MapFactory) {
             return false;
         }
     };
-    this.doSearch = function () {
-        remainingTime = MapFactory.setDeadline();
-        estimatedTime = 0;
-        var point = new Array();
-        point[0] = {keyword: null, city: null};
-        point[0].keyword = $("input[id='startPointSearch']").val();
-        point[1] = {keyword: null, city: null};
-        point[1].keyword = $("input[id='endPointSearch']").val();
+    // this.doSearch = function () {
+    //     remainingTime = MapFactory.setDeadline();
+    //     estimatedTime = 0;
+    //     var point = new Array();
+    //     point[0] = {keyword: null, city: null};
+    //     point[0].keyword = $("input[id='startPointSearch']").val();
+    //     point[1] = {keyword: null, city: null};
+    //     point[1].keyword = $("input[id='endPointSearch']").val();
+    //     driving.clear();
+    //     driving.search(point, function (status, result) {
+    //
+    //         reSearchOrigin = new AMap.LngLat(result.origin.getLng(), result.origin.getLat());
+    //         reSearchDestination = new AMap.LngLat(result.destination.getLng(), result.destination.getLat());
+    //
+    //         $("input[id='reSearchOrigin']").val(reSearchOrigin.getLng().toString() + "," + reSearchOrigin.getLat().toString());
+    //         $("input[id='reSearchDestination']").val(this.reSearchDestination.getLng().toString() + "," + this.reSearchDestination.getLat().toString());
+    //
+    //         searchPathData = [];
+    //         searchDistanceData = [];
+    //         searchTimeData = [];
+    //         searchSpeedData = [];
+    //         searchTrafficData = [];
+    //
+    //         for (var i = 0; i < result.routes.length; i++) {
+    //             for (var j = 0; j < result.routes[i].steps.length; j++) {
+    //                 searchPathData.push(result.routes[i].steps[j].path.slice(0));
+    //                 searchDistanceData.push(result.routes[i].steps[j].distance);
+    //                 searchTimeData.push(result.routes[i].steps[j].time);
+    //                 searchSpeedData.push(result.routes[i].steps[j].distance * 0.001 / result.routes[i].steps[j].time * 360000);
+    //                 searchTrafficData.push(result.routes[i].steps[j].tmcs.slice(0));
+    //
+    //             }
+    //         }
+    //         searchTrafficDataFlag = [];
+    //         for (var k = 0; k < searchTrafficData.length; k++) {
+    //             searchTrafficDataFlag.push(false);
+    //             for (var m = 0; m < searchTrafficData[k].length; m++) {
+    //                 if (searchTrafficData[k][m].status === '拥堵' || searchTrafficData[k][m].status === '严重拥堵') {
+    //                     searchTrafficDataFlag[k] = true;
+    //                 }
+    //             }
+    //         }
+    //         estimatedTime = 0;
+    //         estimatedDistance = 0;
+    //         for (var i = 0; i < result.routes.length; i++) {
+    //             estimatedTime = estimatedTime + result.routes[i].time;
+    //             estimatedDistance = estimatedDistance + result.routes[i].distance;
+    //         }
+    //         searchRemainingTime = estimatedTime;
+    //         $("input[id='estimatedTime']").val(estimatedTime.toString());
+    //         MapFactory.judgementTime(remainingTime, estimatedTime);
+    //     });
+    // };
+    this.doSearch = function (SearchOrigin,SearchDestination,deadline) {
+        console.log("doSearch执行");
+        remainingTime = MapFactory.setDeadline(deadline);
+        // estimatedTime = 0;
+        // var point = new Array();
+        // point[0] = {keyword: null, city: null};
+        // point[0].keyword = $("input[id='startPointSearch']").val();
+        // point[1] = {keyword: null, city: null};
+        // point[1].keyword = $("input[id='endPointSearch']").val();
         driving.clear();
-        driving.search(point, function (status, result) {
-
+        driving.search(SearchOrigin,SearchDestination, function (status, result) {
+            console.log("search执行");
             reSearchOrigin = new AMap.LngLat(result.origin.getLng(), result.origin.getLat());
             reSearchDestination = new AMap.LngLat(result.destination.getLng(), result.destination.getLat());
 
@@ -255,7 +314,26 @@ App.service('MapService', function (MapFactory) {
             searchRemainingTime = estimatedTime;
             $("input[id='estimatedTime']").val(estimatedTime.toString());
             MapFactory.judgementTime(remainingTime, estimatedTime);
+
+            //
+            var revent = {};
+            revent.type = eventType.RW_PLAN;
+            revent.id = generateId();
+            revent.data = {
+                origin: [reSearchOrigin.getLng(), reSearchOrigin.getLat()],
+                destination: [reSearchDestination.getLng(), reSearchDestination.getLat()],
+                remainingTime: remainingTime,
+                estimatedTime: estimatedTime,
+                estimatedDistance: estimatedDistance
+            };
+            $http.post(activityBasepath + '/revents', revent)
+                .success(function (data) {
+                    console.log("return result",data);
+
+                });
+            console.log("search结束");
         });
+        console.log("doSearch结束");
     };
     this.doNavigation = function () {
         pathSimplifierIns.clearPathNavigators();
@@ -356,7 +434,6 @@ App.service('MapService', function (MapFactory) {
                     MapFactory.judgementTime(remainingTime, estimatedTime);
                     console.log("search结束");
                     sync4Expend = true;
-
                 });
                 console.log("doSearch4Change结束");
             };

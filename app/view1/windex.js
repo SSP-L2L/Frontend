@@ -9,7 +9,7 @@ angular.module('myApp.view1', ['ngRoute'])
         });
     }])
 
-    .controller('View1Ctrl', function ($http, $scope, MapService, VesselProcessService) {
+    .controller('View1Ctrl', function ($http, $scope, MapService, VesselProcessService, $interval) {
         $scope.wInst = undefined;
         $scope.vVariables = undefined;
 
@@ -57,4 +57,73 @@ angular.module('myApp.view1', ['ngRoute'])
             console.log("promise : test ");
         });
         // }, 2000);
+        // glp
+
+        $scope.lastEventId = 0;
+        var eventPromise = $interval(function () {
+            $http.get(activityBasepath + '/sevents/' + $scope.lastEventId)
+                .success(function (data) {
+                    console.log('events: ', data);
+                    if (data.length > 0) {
+                        data.sort(function sortNumber(a, b) {
+                            return a.id - b.id
+                        });
+                        for (var i = 0; i < data.length; i++) {
+                            var event = data[i];
+                            if (event.id > $scope.lastEventId) {
+                                $scope.lastEventId = event.id;
+                            }
+                            if ('W_START' == event.type) {
+
+                            }
+                            if ('W_PLAN' == event.type) {
+                                console.log(event.id);
+                                console.log(event.data);
+                                $scope.W_START_Handle(event);
+                            }
+                        }
+                    }
+                });
+        }, 2000);
+        $scope.W_START_Handle = function (event) {
+            console.log("W_START_Handle执行");
+            if (event.data.W_Info.needPlan) {
+                var origin = new AMap.LngLat(event.data.W_Info.x_Coor, event.data.W_Info.y_Coor);
+                var destination = new AMap.LngLat(event.data.W_Info.w_TargLoc.x_coor, event.data.W_Info.w_TargLoc.y_coor);
+                var deadline = event.data.W_Info.planRes;
+                MapService.doSearch(origin, destination, deadline);
+            }
+        };
+        var revent = {
+            'type': eventType.RW_PLAN,
+            'id': generateId(),
+            'data': {
+                'value': 10,
+                'value2': 'ssss',
+                'value3': {
+                    'xx': 'x'
+                }
+            }
+        };
+
+        // revent.type = eventType.RW_PLAN;
+        // revent.id = generateId();
+        // revent.data = {
+        //     // origin: [reSearchOrigin.getLng(), reSearchOrigin.getLat()],
+        //     // destination: [reSearchDestination.getLng(), reSearchDestination.getLat()],
+        //     // remainingTime: remainingTime,
+        //     // estimatedTime: estimatedTime,
+        //     // estimatedDistance: estimatedDistance
+        //     value: 10
+        // };
+        // $http.post(activityBasepath + '/revents', revent)
+        //     .success(function (data) {
+        //         console.log("return result");
+        //         console.log("return event : "+data[0].data);
+        //     }).error(function (data) {
+        //     console.log("fails")
+        // });
+
     });
+
+
