@@ -9,10 +9,12 @@ angular.module('myApp.view1', ['ngRoute'])
         });
     }])
 
-    .controller('View1Ctrl', function ($http, $scope, MapService, VesselProcessService, $interval) {
+    .controller('View1Ctrl', function ($http, $scope, MapService, VesselProcessService, $interval,Session) {
         $scope.wInst = undefined;
         $scope.vVariables = undefined;
-
+        if(Session.getEventId()===null){
+            Session.createEventId();
+        }
         MapService.initMap();
         $scope.doSearch = function () {
             MapService.doSearch();
@@ -59,27 +61,32 @@ angular.module('myApp.view1', ['ngRoute'])
         // }, 2000);
         // glp
 
-        $scope.lastEventId = 0;
+        console.log('getLastEventId:'+Session.getLastEventId());
+        if(Session.getLastEventId()===null){
+            Session.createlastEventId();
+        }
         var eventPromise = $interval(function () {
-            $http.get(activityBasepath + '/sevents/' + $scope.lastEventId)
+            $http.get(activityBasepath + '/sevents/' +Session.getLastEventId())
                 .success(function (data) {
-                    console.log('events: ', data);
                     if (data.length > 0) {
                         data.sort(function sortNumber(a, b) {
                             return a.id - b.id
                         });
                         for (var i = 0; i < data.length; i++) {
                             var event = data[i];
-                            if (event.id > $scope.lastEventId) {
-                                $scope.lastEventId = event.id;
+                            if (event.id > Session.getLastEventId()) {
+                                Session.setlastEventId(event.id);
                             }
                             if ('W_START' == event.type) {
 
                             }
                             if ('W_PLAN' == event.type) {
-                                console.log(event.id);
-                                console.log(event.data);
+                                console.log("W_PLAN", event.data);
                                 $scope.W_START_Handle(event);
+                            }
+                            if ('W_RUN' == event.type) {
+                                console.log("W_RUN", event.data);
+                                MapService.doNavigation(event);
                             }
                         }
                     }
@@ -94,17 +101,17 @@ angular.module('myApp.view1', ['ngRoute'])
                 MapService.doSearch(origin, destination, deadline);
             }
         };
-        var revent = {
-            'type': eventType.RW_PLAN,
-            'id': generateId(),
-            'data': {
-                'value': 10,
-                'value2': 'ssss',
-                'value3': {
-                    'xx': 'x'
-                }
-            }
-        };
+        // var revent = {
+        //     'type': eventType.RW_PLAN,
+        //     'id': generateId(),
+        //     'data': {
+        //         'value': 10,
+        //         'value2': 'ssss',
+        //         'value3': {
+        //             'xx': 'x'
+        //         }
+        //     }
+        // };
 
         // revent.type = eventType.RW_PLAN;
         // revent.id = generateId();

@@ -22,7 +22,7 @@ App.factory('MapFactory', function ($http) {
     }
 });
 
-App.service('MapService', function (MapFactory,$http) {
+App.service('MapService', function (MapFactory,$http,Session) {
     this.searchPathData = [];
     //路径距离（每段路段的长度）
     this.searchDistanceData = [];
@@ -313,18 +313,18 @@ App.service('MapService', function (MapFactory,$http) {
             }
             searchRemainingTime = estimatedTime;
             $("input[id='estimatedTime']").val(estimatedTime.toString());
-            MapFactory.judgementTime(remainingTime, estimatedTime);
-
+            var judgementTime=MapFactory.judgementTime(remainingTime, estimatedTime);
             //
             var revent = {};
             revent.type = eventType.RW_PLAN;
-            revent.id = generateId();
+            revent.id = Session.generateId();
             revent.data = {
                 origin: [reSearchOrigin.getLng(), reSearchOrigin.getLat()],
                 destination: [reSearchDestination.getLng(), reSearchDestination.getLat()],
                 remainingTime: remainingTime,
                 estimatedTime: estimatedTime,
-                estimatedDistance: estimatedDistance
+                estimatedDistance: estimatedDistance,
+                isSuccess:judgementTime
             };
             $http.post(activityBasepath + '/revents', revent)
                 .success(function (data) {
@@ -335,7 +335,7 @@ App.service('MapService', function (MapFactory,$http) {
         });
         console.log("doSearch结束");
     };
-    this.doNavigation = function () {
+    this.doNavigation = function (event) {
         pathSimplifierIns.clearPathNavigators();
         var sync4Search = true;
         var sync4Expend = false;
@@ -501,8 +501,17 @@ App.service('MapService', function (MapFactory,$http) {
                 return true;
             };
         };
+        getPosition=function () {
+            console.log("getPosition执行");
+            var position=navg1.getPosition();
+            event.data.W_Info.X_Coor=position.getLng();
+            event.data.W_Info.Y_Coor=position.getLat();
+            console.log(event.data.W_Info.X_Coor+','+event.data.W_Info.Y_Coor);
+            VesselProcessService.PutProcessVariable(event.data.W_Info.pid ,"W_Info",event.data.W_Info);
+            setTimeout(getPosition(),2000);
+        };
         navg1.start();
-
+        getPosition();
         expandPath();
     };
 })
