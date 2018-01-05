@@ -34,7 +34,7 @@ App.factory('VesselProcessService', ['$http', '$q', function ($http, $q) {
 	  PutProcessVariable : function(pid , vName , vValue) {
 		  console.log("************PutProcessVariables*********************");
 	      var deferred = $q.defer(); // 声明延后执行，表示要去监控后面的执行  
-	      $http.put(activityBasepath+'/runtime/vessel-procinst/'+pid+'/variables/' + vName, vValue).
+	      $http.put(activityBasepath+'/runtime/cust-process-instances/'+pid+'/variables/' + vName, vValue).
 	      success(function(data, status, headers, config) {  
 	    	  console.log("PutProcessVariables : success : --> data : " + data);
 	    	  deferred.resolve(data);  // 声明执行成功，即http请求数据成功，可以返回数据了  

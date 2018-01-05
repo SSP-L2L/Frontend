@@ -61,37 +61,39 @@ angular.module('myApp.view1', ['ngRoute'])
         // }, 2000);
         // glp
 
-        console.log('getLastEventId:'+Session.getLastEventId());
-        if(Session.getLastEventId()===null){
-            Session.createlastEventId();
-        }
+        // console.log('getLastEventId:'+Session.getLastEventId());
+        // if(Session.getLastEventId()===null){
+        //     Session.createlastEventId();
+        // }
         var eventPromise = $interval(function () {
-            $http.get(activityBasepath + '/sevents/' +Session.getLastEventId())
+            $http.get(activityBasepath + '/sevents')
                 .success(function (data) {
+                    // console.log(data);
                     if (data.length > 0) {
                         data.sort(function sortNumber(a, b) {
                             return a.id - b.id
                         });
                         for (var i = 0; i < data.length; i++) {
                             var event = data[i];
-                            if (event.id > Session.getLastEventId()) {
-                                Session.setlastEventId(event.id);
-                            }
+                            // if (event.id > Session.getLastEventId()) {
+                            //     Session.setlastEventId(event.id);
+                            // }
                             if ('W_START' == event.type) {
 
                             }
                             if ('W_PLAN' == event.type) {
+                                console.log("pid : " , event.data.W_Info.pid);
                                 console.log("W_PLAN", event.data);
                                 $scope.W_START_Handle(event);
                             }
                             if ('W_RUN' == event.type) {
-                                console.log("W_RUN", event.data);
+                                console.log("W_RUN.pid", event.data);
                                 MapService.doNavigation(event);
                             }
                         }
                     }
                 });
-        }, 2000);
+        }, 2000000);
         $scope.W_START_Handle = function (event) {
             console.log("W_START_Handle执行");
             if (event.data.W_Info.needPlan) {
@@ -130,6 +132,12 @@ angular.module('myApp.view1', ['ngRoute'])
         //     }).error(function (data) {
         //     console.log("fails")
         // });
+        $http.get(activityBasepath+'/runtime/process-instances/'+375011+"/variables/W_Info")
+            .success(function(data){
+                console.log("Get v :" , data);
+                data.value.w_Name="gdfgdf";
+                VesselProcessService.PutProcessVariable('375011', "W_Info", data);
+            })
 
     });
 

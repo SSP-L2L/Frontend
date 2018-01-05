@@ -17,7 +17,7 @@ App.service('Session',function (localStorageService) {
     };
     this.setEventId=function (value) {
         localStorageService.set("eventId",value);
-    }
+    };
     this.generateId=function () {
         var temp=localStorageService.get("eventId");
         temp++;
