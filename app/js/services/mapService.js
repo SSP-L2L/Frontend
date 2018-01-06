@@ -22,7 +22,7 @@ App.factory('MapFactory', function ($http) {
     }
 });
 
-App.service('MapService', function (MapFactory, $http, Session, VesselProcessService) {
+App.service('MapService', function (MapFactory, $http, Session, VesselProcessService, $interval) {
     this.searchPathData = [];
     //路径距离（每段路段的长度）
     this.searchDistanceData = [];
@@ -265,12 +265,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
     this.doSearch = function (SearchOrigin, SearchDestination, deadline) {
         console.log("doSearch执行");
         remainingTime = MapFactory.setDeadline(deadline);
-        // estimatedTime = 0;
-        // var point = new Array();
-        // point[0] = {keyword: null, city: null};
-        // point[0].keyword = $("input[id='startPointSearch']").val();
-        // point[1] = {keyword: null, city: null};
-        // point[1].keyword = $("input[id='endPointSearch']").val();
         driving.clear();
         driving.search(SearchOrigin, SearchDestination, function (status, result) {
             console.log("search执行");
@@ -305,6 +299,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     }
                 }
             }
+            searchTrafficDataFlag[10] = true;
             estimatedTime = 0;
             estimatedDistance = 0;
             for (var i = 0; i < result.routes.length; i++) {
@@ -324,7 +319,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 remainingTime: remainingTime,
                 estimatedTime: estimatedTime,
                 estimatedDistance: estimatedDistance,
-                // isSuccess:judgementTime
             };
             $http.post(activityBasepath + '/revents', revent)
                 .success(function (data) {
@@ -335,10 +329,11 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
         });
         console.log("doSearch结束");
     };
-    this.doNavigation = function (event) {
+    this.doNavigation = function (event, gpTimer) {
         pathSimplifierIns.clearPathNavigators();
         var sync4Search = true;
         var sync4Expend = false;
+        var gpTimer = null;
         totalTime = 0;
         count = 0;
         index = 0;
@@ -372,20 +367,47 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 //TODO 总结：回调函数导致的函数顺序执行结构混乱，用双setTimeout保持三者顺序执行
                  */
                 else if (index + 1 <= searchPathData.length - 1 && searchTrafficDataFlag[index + 1]) {
-                    setTimeout(function () {
-                        if (sync4Search) {
-                            console.log(reSearchOrigin);
-                            console.log("前方出现拥堵！");
-                            doSearch4Change();
-                            sync4Search = false;
-                        }
-                    }, 1000);
-                    setTimeout(function () {
-                        if (sync4Expend) {
-                            expandPathFlag = doExpand4Change();
-                            sync4Expend = false;
-                        }
-                    }, 1000);
+                    console.log("前方堵车!");
+                    $interval.cancel(gpTimer);
+                    reSearchOrigin = new AMap.LngLat(navg1.getPosition().getLng(), navg1.getPosition().getLat());
+                    var revent = {};
+                    revent.type = eventType.RW_STOP;
+                    revent.id = Session.generateId();
+                    revent.data = {
+                        origin: [reSearchOrigin.getLng(), reSearchOrigin.getLat()],
+                        isTraffic: true
+                    };
+                    $http.get(activityBasepath + '/runtime/process-instances/' + event.data.W_Info.pid + "/variables/W_Info")
+                        .success(function (data) {
+                            data.value.x_Coor = reSearchOrigin.getLng();
+                            data.value.y_Coor = reSearchOrigin.getLat();
+                            console.log("当前点坐标:" + data.value.x_Coor + ',' + data.value.y_Coor);
+                            console.log();
+                            VesselProcessService.PutProcessVariable(event.data.W_Info.pid, "W_Info", data)
+                                .then(function () {
+                                    $http.post(activityBasepath + '/revents', revent)
+                                        .success(function (data) {
+                                            console.log("return result", data);
+                                        });
+                                })
+                        });
+                    // navg1.destroy();
+                    expandPathFlag = false;
+                    console.log("处理完毕！");
+                    // setTimeout(function () {
+                    //     if (sync4Search) {
+                    //         console.log(reSearchOrigin);
+                    //         console.log("前方出现拥堵！");
+                    //         doSearch4Change();
+                    //         sync4Search = false;
+                    //     }
+                    // }, 1000);
+                    // setTimeout(function () {
+                    //     if (sync4Expend) {
+                    //         expandPathFlag = doExpand4Change();
+                    //         sync4Expend = false;
+                    //     }
+                    // }, 1000);
                 }
             }
             if (expandPathFlag) {
@@ -396,7 +418,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 console.log("doSearch4Change执行");
                 driving.clear();
                 estimatedTime = 0;
-                reSearchOrigin = new AMap.LngLat(navg1.getPosition().getLng(), navg1.getPosition().getLat());
+                // reSearchOrigin = new AMap.LngLat(navg1.getPosition().getLng(), navg1.getPosition().getLat());
                 driving.search(reSearchOrigin, reSearchDestination, function (status, result) {
                     console.log("search开始");
                     searchPathData = [];
@@ -446,9 +468,10 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
 
                 index++;
 
-                if (index >= searchPathData.length - 1)
+                if (index > searchPathData.length - 1) {
+                    $interval.cancel(gpTimer);
                     return false;
-
+                }
                 data[0].path = searchPathData[index].slice(0);
 
                 //延展路径
@@ -477,6 +500,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 console.log("doExpand4Change执行");
 
                 if (reSearchOrigin.distance(reSearchDestination) < 10) {
+                    $interval.cancel(gpTimer);
                     return false;
                 }
                 index = 0;
@@ -507,24 +531,20 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
         getPosition = function () {
             console.log("getPosition执行");
             var position = navg1.getPosition();
-            event.data.W_Info.x_Coor = position.getLng();
-            event.data.W_Info.x_Coor = position.getLat();
-            // var pdata = {
-            //     'name' : 'W_Info' ,
-            //     'scope' : 'local',
-            //     'type' : 'Weagon' ,
-            //     'value' : event.data.W_Info
-            // };
-            console.log(event.data.W_Info.y_Coor + ',' + event.data.W_Info.y_Coor);
-            $http.get(activityBasepath+'runtime/process-instances/'+pid+"/variables/W_Info")
-                .success(function(data){
-                    VesselProcessService.PutProcessVariable(event.data.W_Info.pid, "W_Info", pdata);
-                })
-
+            $http.get(activityBasepath + '/runtime/process-instances/' + event.data.W_Info.pid + "/variables/W_Info")
+                .success(function (data) {
+                    data.value.x_Coor = position.getLng();
+                    data.value.y_Coor = position.getLat();
+                    console.log(data.value.x_Coor + ',' + data.value.y_Coor);
+                    console.log()
+                    VesselProcessService.PutProcessVariable(event.data.W_Info.pid, "W_Info", data);
+                });
+            // setTimeout(getPosition, 10000);
         };
         navg1.start();
-        setTimeout(getPosition, 10000);
+        gpTimer = $interval(function () {
+            getPosition();
+        }, 10000);
         expandPath();
     };
-})
-;
+});

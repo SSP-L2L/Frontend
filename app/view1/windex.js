@@ -90,10 +90,13 @@ angular.module('myApp.view1', ['ngRoute'])
                                 console.log("W_RUN.pid", event.data);
                                 MapService.doNavigation(event);
                             }
+                            if('W_Coord' == event.type){
+
+                            }
                         }
                     }
                 });
-        }, 2000000);
+        }, 2000);
         $scope.W_START_Handle = function (event) {
             console.log("W_START_Handle执行");
             if (event.data.W_Info.needPlan) {
@@ -132,12 +135,12 @@ angular.module('myApp.view1', ['ngRoute'])
         //     }).error(function (data) {
         //     console.log("fails")
         // });
-        $http.get(activityBasepath+'/runtime/process-instances/'+375011+"/variables/W_Info")
-            .success(function(data){
-                console.log("Get v :" , data);
-                data.value.w_Name="gdfgdf";
-                VesselProcessService.PutProcessVariable('375011', "W_Info", data);
-            })
+        // $http.get(activityBasepath+'/runtime/process-instances/'+392550+"/variables/W_Info")
+        //     .success(function(data){
+        //         console.log("Get v :" , data);
+        //         data.value.w_Name="gdfgdf";
+        //         VesselProcessService.PutProcessVariable('392550', "W_Info", data);
+        //     })
 
     });
 
