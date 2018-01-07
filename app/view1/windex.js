@@ -15,6 +15,40 @@ angular.module('myApp.view1', ['ngRoute'])
         if(Session.getEventId()===null){
             Session.createEventId();
         }
+        $.toaster({
+            settings: {
+                toaster: {
+                    css: {
+                        top: '10%',
+                        left: '5%'
+                    }
+                },
+                toast:
+                    {
+                        fade: {in: 'fast', out: 'slow'},
+
+                        display: function ($toast) {
+                            return $toast.fadeIn(settings.toast.fade.in);
+                        },
+
+                        remove: function ($toast, callback) {
+                            return $toast.animate(
+                                {
+                                    opacity: '0',
+                                    height: '0px'
+                                },
+                                {
+                                    duration: settings.toast.fade.out,
+                                    complete: callback
+                                });
+                        }
+                    },
+                timeout: 3000
+            }
+        });
+        $.toaster('Your message here');
+        $.toaster('Your message here', 'Your Title');
+        $.toaster('Your message here', 'Your Title', 'danger');
         MapService.initMap();
         $scope.doSearch = function () {
             MapService.doSearch();
