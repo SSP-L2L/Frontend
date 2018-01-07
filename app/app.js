@@ -5,7 +5,6 @@ var App = angular.module('myApp', [
     'ngRoute',
     'myApp.view1',
     'myApp.version',
-    'rt.debounce',
     'LocalStorageModule'
 ]).config(['$locationProvider', '$routeProvider', function ($locationProvider, $routeProvider) {
     $locationProvider.hashPrefix('!');

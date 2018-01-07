@@ -2,37 +2,29 @@
     该文档存放所有自定义的CSS
 */
 
-
 body {
     font-size: 12px;
 }
 
-#collapseOne button{
+#collapseOne button {
     text-align: center;
-    margin:5px;
+    margin: 5px;
 
 }
-#console {
-    background-color: #cccccc;
-    color: #222222;
-    border: 1px solid silver;
+
+#mapConsole {
     box-shadow: 3px 4px 3px 0px silver;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 25%;
+    position: relative;
+    width: 30%;
     height: 100%;
-    border-radius: 0px;
-    overflow: auto;
-    line-height: 20px;
+    border-radius: 10px;
 }
-#console #navbar button{
-    margin-right: 5px;
+
+#navbar button {
+    margin-right: 10px;
 }
-#logo{
-    height: 40px;
-    width: 60px;
+
+#logo {
+    height: 30px;
+    width: 40px;
 }
-/*#logodiv{*/
-    /*background: black;*/
-/*}*/
