@@ -9,10 +9,12 @@ angular.module('myApp.view1', ['ngRoute'])
         });
     }])
 
-    .controller('View1Ctrl', function ($http, $scope, MapService, VesselProcessService, $interval,Session) {
+    .controller('View1Ctrl', function ($http, $scope, MapService, VesselProcessService, $interval, Session) {
+        $scope.V_id = undefined;
+        $scope.sailor = undefined;
         $scope.wInst = undefined;
         $scope.vVariables = undefined;
-        if(Session.getEventId()===null){
+        if (Session.getEventId() === null) {
             Session.createEventId();
         }
         $.toaster({
@@ -46,34 +48,33 @@ angular.module('myApp.view1', ['ngRoute'])
                 timeout: 3000
             }
         });
-        $.toaster('Your message here');
-        $.toaster('Your message here', 'Your Title');
-        $.toaster('Your message here', 'Your Title', 'danger');
         MapService.initMap();
-        $scope.doSearch = function () {
-            MapService.doSearch();
-        };
-        $scope.doNavigation = function () {
-            MapService.doNavigation();
-        };
-
-        // 入口 ：
-        // var instTimer = $interval(function () {
-        // 侦听流程实例，获取启动vessel-process Instances 的船号等信息
+        // $scope.doSearch = function () {
+        //     MapService.doSearch();
+        // };
+        // $scope.doNavigation = function () {
+        //     MapService.doNavigation();
+        // };
+        //
+        // // 入口 ：
+        // // 侦听流程实例，获取启动vessel-process Instances 的船号等信息
         var params = {
             params: {
-                processDefinitionKey: 'process'
+                processDefinitionKey: 'process_pool4'
+                // processDefinitionKey: 'process'
+
             }
         };
         var promise = VesselProcessService.GetProcessInstance(params);
         promise.then(function (data) {  // 调用承诺API获取数据 .resolve
-            console.log("promise : success ");
+            console.log("promise : success ",data);
             if (data.size != 0) {
                 console.log("监听到车流程实例");
                 $scope.wInst = data.data[0];
                 console.log("$scope.wInst : " + $scope.wInst['id']);
                 var pid = data.data[0].id;
-                var promise1 = VesselProcessService.GetProcessVariablesById(data.data[0].id);
+                console.log(pid);
+                var promise1 = VesselProcessService.GetProcessVariablesById(pid);
                 promise1.then(function (data) {  // 调用承诺API获取数据 .resolve
                     console.log("promise : success ");
                     $scope.wVariables = data;
@@ -92,13 +93,7 @@ angular.module('myApp.view1', ['ngRoute'])
         }).finally(function (data) {
             console.log("promise : test ");
         });
-        // }, 2000);
-        // glp
 
-        // console.log('getLastEventId:'+Session.getLastEventId());
-        // if(Session.getLastEventId()===null){
-        //     Session.createlastEventId();
-        // }
         var eventPromise = $interval(function () {
             $http.get(activityBasepath + '/sevents')
                 .success(function (data) {
@@ -116,7 +111,7 @@ angular.module('myApp.view1', ['ngRoute'])
 
                             }
                             if ('W_PLAN' == event.type) {
-                                console.log("pid : " , event.data.W_Info.pid);
+                                console.log("pid : ", event.data.W_Info.pid);
                                 console.log("W_PLAN", event.data);
                                 $scope.W_START_Handle(event);
                             }
@@ -124,7 +119,7 @@ angular.module('myApp.view1', ['ngRoute'])
                                 console.log("W_RUN.pid", event.data);
                                 MapService.doNavigation(event);
                             }
-                            if('W_Coord' == event.type){
+                            if ('W_Coord' == event.type) {
 
                             }
                         }
@@ -140,42 +135,40 @@ angular.module('myApp.view1', ['ngRoute'])
                 MapService.doSearch(origin, destination, deadline);
             }
         };
-        // var revent = {
-        //     'type': eventType.RW_PLAN,
-        //     'id': generateId(),
-        //     'data': {
-        //         'value': 10,
-        //         'value2': 'ssss',
-        //         'value3': {
-        //             'xx': 'x'
-        //         }
-        //     }
-        // };
+        $scope.startVessel = function () {
+            var param = {
+                params: {
+                    name: 'Vessel'
+                }
+            };
+            $http.get(activityBasepath + "/repository/process-definitions", param)
+                .success(function (data) {
+                    // console.log("all definitions : " , data);
+                    var pdArray = data.data;
+                    console.log("the newest version : ", pdArray[pdArray.length - 1]);
+                    var curPd = pdArray[pdArray.length - 1];
+                    var processData = {
+                        processDefinitionId: curPd.id,
+                        name: 'Vessel',
+                        values: {
+                            sailor: $scope.sailor,
+                            V_id: $scope.V_id
+                        }
+                    };
+                    $http.post(activityBasepath + "/rest/process-instances", processData)
+                        .success(function (data) {
+                            $.toaster("启动船实例",'Vessel','success');
+                            console.log("启动船实例", data);
+                            var pid = data.id;
+                            VesselProcessService.GetProcessVariablesById(pid)
+                                .then(function (data) {
+                                    // console.log("variables : " , data);
+                                   MapService.voyaging(pid,$scope.V_id, data);
+                                });
+                        });
 
-        // revent.type = eventType.RW_PLAN;
-        // revent.id = generateId();
-        // revent.data = {
-        //     // origin: [reSearchOrigin.getLng(), reSearchOrigin.getLat()],
-        //     // destination: [reSearchDestination.getLng(), reSearchDestination.getLat()],
-        //     // remainingTime: remainingTime,
-        //     // estimatedTime: estimatedTime,
-        //     // estimatedDistance: estimatedDistance
-        //     value: 10
-        // };
-        // $http.post(activityBasepath + '/revents', revent)
-        //     .success(function (data) {
-        //         console.log("return result");
-        //         console.log("return event : "+data[0].data);
-        //     }).error(function (data) {
-        //     console.log("fails")
-        // });
-        // $http.get(activityBasepath+'/runtime/process-instances/'+392550+"/variables/W_Info")
-        //     .success(function(data){
-        //         console.log("Get v :" , data);
-        //         data.value.w_Name="gdfgdf";
-        //         VesselProcessService.PutProcessVariable('392550', "W_Info", data);
-        //     })
-
+                });
+        };
     });
 
 

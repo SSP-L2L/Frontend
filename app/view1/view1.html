@@ -4,19 +4,21 @@
         <a class="navbar-brand pull-left" href="#">
             <img alt="Brand" style="margin-top:-4px;" id="logo" class="img-thumbnai" src="/images/logo.png">
         </a>
-        <button type="button" id="menubtn" class="btn btn-default navbar-btn pull-right " data-toggle="collapse" data-target="#mapConsole">
+        <button type="button" id="menubtn" class="btn btn-default navbar-btn pull-right " data-toggle="collapse"
+                data-target="#mapConsole">
             <span class="glyphicon glyphicon-menu-hamburger"></span>
         </button>
-        <button type="button" class="btn btn-default navbar-btn pull-right  " data-toggle="modal"
-                data-target="#myModal">
+        <button type="button" id='sendGoods' class="btn btn-default navbar-btn pull-right  " data-toggle="modal"
+                data-target="#sendGoodsModal">
             <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span>
         </button>
-        <button type="button" class="btn btn-default navbar-btn pull-right " data-toggle="alert" data-target="#alert">
+        <button type="button" id="start" class="btn btn-default navbar-btn pull-right" data-toggle="modal"
+                data-target="#startVesselModal">
             <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
         </button>
     </div>
 </nav>
-<div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal" id="sendGoodsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -34,6 +36,40 @@
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭
                 </button>
                 <button type="button" class="btn btn-primary">
+                    提交更改
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal" id="startVesselModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="startVesselModalLabel">
+                    模态框（Modal）标题
+                </h4>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <tr>
+                        <td><span class="input-group-addon">船员:</span></td>
+                        <td><input id="sailor" class="form-control" ng-model="sailor"/></td>
+                    </tr>
+                    <tr>
+                        <td><span class="input-group-addon">船号:</span></td>
+                        <td><input id="V_id" class="form-control" ng-model="V_id"/></td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" ng-click="startVessel()">
                     提交更改
                 </button>
             </div>
