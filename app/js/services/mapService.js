@@ -214,7 +214,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     searchPathData.push(result.routes[i].steps[j].path.slice(0));
                     searchDistanceData.push(result.routes[i].steps[j].distance);
                     searchTimeData.push(result.routes[i].steps[j].time);
-                    searchSpeedData.push(result.routes[i].steps[j].distance  / result.routes[i].steps[j].time * 36000);
+                    searchSpeedData.push(result.routes[i].steps[j].distance  / result.routes[i].steps[j].time * 360000);
                     searchTrafficData.push(result.routes[i].steps[j].tmcs.slice(0));
 
                 }
@@ -224,7 +224,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 searchTrafficDataFlag.push(false);
                 for (var m = 0; m < searchTrafficData[k].length; m++) {
                     if (searchTrafficData[k][m].status === '拥堵' || searchTrafficData[k][m].status === '严重拥堵') {
-                        searchTrafficDataFlag[k] = false;
+                        searchTrafficDataFlag[k] = true;
                         searchSpeedData[k]=searchSpeedData[k]/2;
                     }
                 }
@@ -287,6 +287,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
         //flag是是否做路程扩展的判断标志
         expandPathFlag = true;
         expandPath = function () {
+            console.log("event.data.W_Info.id",event.data.W_Info.id);
             if (navg1.getNaviStatus().toString() === 'pause' && navg1.isCursorAtPathEnd()) {
                 if (index + 1 <= searchPathData.length - 1 && !searchTrafficDataFlag[index + 1]) {
                     expandPathFlag = doExpand();
@@ -305,7 +306,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                         origin: [reSearchOrigin.getLng(), reSearchOrigin.getLat()],
                         isTraffic: true
                     };
-                    $http.get(activityBasepath + '/runtime/process-instances/' + pid + "/variables/W_Info")
+                    $http.get(activityBasepath + '/runtime/process-instances/' + event.data.W_Info.pid + "/variables/W_Info")
                         .success(function (data) {
                             data.value.x_Coor = reSearchOrigin.getLng();
                             data.value.y_Coor = reSearchOrigin.getLat();
@@ -489,9 +490,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
          */
         // var isVoya = 1; //0---船在其他状态， 1---船正在某一段航行
 
-        // 设置Target_Loc
-        // console.log(pvars);
-
         console.log("glp pvars: ",pvars);
         var pIdxs = VesselProcessService.FindVarIdxByName(pvars);
         console.log("pIdxs" + pIdxs);
@@ -581,18 +579,18 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 promise1.then(function(data) {  // 调用承诺API获取数据 .resolve
                     pvars = data;
                     pIdxs = VesselProcessService.FindVarIdxByName(pvars);
-                    $.toaster("<-----暂停 ---->"+pvars[pIdxs['State']]['value'] == 'arrival','Vessel','warning');
+                    // $.toaster("<-----暂停 ---->"+pvars[pIdxs['State']]['value'] == 'arrival','Vessel','warning');
                     // console.log("<-----暂停 ---->"+pvars[pIdxs['State']]['value'] == 'arrival');
                     // console.log(" State : "+pvars[pIdxs['State']].value);
                     // console.log(pvars[0].name);
                     if(pvars[pIdxs['State']]['value'] == 'arrival'){
-                        $.toaster("船处于其他状态，anchoring /docking",'Vessel','warning');
-                        // console.log("船处于其他状态，anchoring /docking")
+                        // $.toaster("船处于其他状态，anchoring /docking",'Vessel','warning');
+                        console.log("船处于其他状态，anchoring /docking")
                     }
                 });
             }
 
-        } , 2000);
+        } , 500);
     }
 
 });

@@ -10,8 +10,8 @@ angular.module('myApp.view1', ['ngRoute'])
     }])
 
     .controller('View1Ctrl', function ($http, $scope, MapService, VesselProcessService, $interval, Session) {
-        $scope.V_id = undefined;
-        $scope.sailor = undefined;
+        $scope.V_id = "413362260";
+        $scope.sailor = 'admin';
         $scope.wInst = undefined;
         $scope.vVariables = undefined;
         if (Session.getEventId() === null) {
