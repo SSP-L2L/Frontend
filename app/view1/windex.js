@@ -67,7 +67,7 @@ angular.module('myApp.view1', ['ngRoute'])
         };
         var promise = VesselProcessService.GetProcessInstance(params);
         promise.then(function (data) {  // 调用承诺API获取数据 .resolve
-            console.log("promise : success ",data);
+            console.log("promise : success ", data);
             if (data.size != 0) {
                 console.log("监听到车流程实例");
                 $scope.wInst = data.data[0];
@@ -111,13 +111,13 @@ angular.module('myApp.view1', ['ngRoute'])
 
                             }
                             if ('W_PLAN' == event.type) {
-                                console.log("pid : ", event.data.W_Info.pid);
-                                console.log("W_PLAN", event.data);
-                                $scope.W_START_Handle(event);
+                                // console.log("pid : ", event.data.W_Info.pid);
+                                // console.log("W_PLAN", event.data);
+                                // $scope.W_START_Handle(event);
                             }
                             if ('W_RUN' == event.type) {
                                 console.log("W_RUN.pid", event.data);
-                                MapService.doNavigation(event);
+                                $scope.W_START_Handle(event);
                             }
                             if ('W_Coord' == event.type) {
 
@@ -133,6 +133,13 @@ angular.module('myApp.view1', ['ngRoute'])
                 var destination = new AMap.LngLat(event.data.W_Info.w_TargLoc.x_coor, event.data.W_Info.w_TargLoc.y_coor);
                 var deadline = event.data.W_Info.planRes;
                 MapService.doSearch(origin, destination, deadline);
+                $interval(function () {
+                    console.log(NavigationFlag)
+                    if(NavigationFlag){
+                        MapService.doNavigation(event);
+                    }
+                },1000);
+                // MapService.doNavigation(event);
             }
         };
         $scope.startVessel = function () {
@@ -157,13 +164,13 @@ angular.module('myApp.view1', ['ngRoute'])
                     };
                     $http.post(activityBasepath + "/rest/process-instances", processData)
                         .success(function (data) {
-                            $.toaster("启动船实例",'Vessel','success');
+                            $.toaster("启动船实例", 'Vessel', 'success');
                             console.log("启动船实例", data);
                             var pid = data.id;
                             VesselProcessService.GetProcessVariablesById(pid)
                                 .then(function (data) {
                                     // console.log("variables : " , data);
-                                   MapService.voyaging(pid,$scope.V_id, data);
+                                    MapService.voyaging(pid, $scope.V_id, data);
                                 });
                         });
 
