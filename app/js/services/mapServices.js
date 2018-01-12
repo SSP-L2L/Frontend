@@ -1,3 +1,4 @@
+'use strict';
 App.factory('MapFactory', function ($http) {
     // noinspection JSAnnotator
     return {
@@ -12,7 +13,7 @@ App.factory('MapFactory', function ($http) {
             position: position,
             title: title
         });
-    };
+    }
     }
 });
 var NavigationFlag=false;
@@ -39,24 +40,26 @@ var NavigationData = {};
 var NavigationEvent={};
 var index=0;
 
+
+var port64 = undefined;  //使用中的港口，icon类
+var uselessPort64 = undefined;   //未使用中的港口，icon类
+var supplier64 = undefined;   //供货商，icon类
+var manager64 = undefined;    //主管,icon类
+var portMarkers = []; //港口点标记集合，Marker类集合
+
+var vids = {};
+var port = [];
+var isRun = {};// key : pid , value : 流程实例是否已开始显示
+var vInst = {};	// 流程实例
+var vVariables = {};	// 流程实例关联的变量
+var target = undefined// 目标港口是第一个
+var pVid = {};
+
 App.service('MapService', function (MapFactory, $http, Session, VesselProcessService, $interval) {
 
-
-    port64 = undefined;  //使用中的港口，icon类
-    uselessPort64 = undefined;   //未使用中的港口，icon类
-    supplier64 = undefined;   //供货商，icon类
-    manager64 = undefined;    //主管,icon类
-    portMarkers = []; //港口点标记集合，Marker类集合
-
-    vids = {};
     vids['413362260'] = data_1;// 船号-->位置信息
-    port = [];
     port['413362260'] = port_1.slice(0);// 船号-->港口列表
-    isRun = {};// key : pid , value : 流程实例是否已开始显示
-    vInst = {};	// 流程实例
-    vVariables = {};	// 流程实例关联的变量
     target = port_1[0];// 目标港口是第一个
-    pVid = {};
 
     this.initMap = function () {
         /*
@@ -294,7 +297,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
         pathSimplifierIns.clearPathNavigators();
         // var sync4Search = true;
         // var sync4Expend = false;
-        gpTimer = null;
+        var gpTimer = null;
         totalTime = 0;
         NavigationData = [{
             name: '动态路线',
