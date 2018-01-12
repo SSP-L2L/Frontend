@@ -49,15 +49,8 @@ angular.module('myApp.view1', ['ngRoute'])
             }
         });
         MapService.initMap();
-        // $scope.doSearch = function () {
-        //     MapService.doSearch();
-        // };
-        // $scope.doNavigation = function () {
-        //     MapService.doNavigation();
-        // };
-        //
-        // // 入口 ：
-        // // 侦听流程实例，获取启动vessel-process Instances 的船号等信息
+        // 入口 ：
+        // 侦听流程实例，获取启动vessel-process Instances 的船号等信息
         var params = {
             params: {
                 processDefinitionKey: 'process_pool4'

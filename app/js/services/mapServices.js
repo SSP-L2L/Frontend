@@ -4,7 +4,15 @@ App.factory('MapFactory', function ($http) {
         setDeadline: function (deadline) {
             // $("input[id='remainingTime']").val(deadline.toString());
             return remainingTime;
-        }
+        },
+        setPort : function (title, position) {
+        new AMap.Marker({
+            map: map,
+            icon: port64,
+            position: position,
+            title: title
+        });
+    };
     }
 });
 var NavigationFlag=false;
@@ -32,15 +40,6 @@ var NavigationEvent={};
 var index=0;
 
 App.service('MapService', function (MapFactory, $http, Session, VesselProcessService, $interval) {
-    // this.searchPathData = [];
-    // 路径距离（每段路段的长度）
-    // 路径预计时间（每段路段的预计时间)
-    // 路径速度（用上述做除法得到的每段路段的速度）
-    // 当前路径预计时间
-    // 累计时间
-    // 截止时间
-    // 路径剩余时间
-    // 剩余时间
 
 
     port64 = undefined;  //使用中的港口，icon类
@@ -63,7 +62,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
         /*
            加载Map
         */
-
         map = new AMap.Map("mapContainer", {
             //是否监控地图容器尺寸变化，默认值为false
             resizeEnable: true,
@@ -75,19 +73,19 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
         });
         port64 = new AMap.Icon({
             image: "/images/port64.png",
-            size: new AMap.Size(32, 32)
+            size: new AMap.Size(64, 64)
         });
         uselessPort64 = new AMap.Icon({
             image: "/images/useless-port64.png",
-            size: new AMap.Size(32, 32)
+            size: new AMap.Size(64, 64)
         });
         supplier64 = new AMap.Icon({
             image: "/images/supplier64.png",
-            size: new AMap.Size(32, 32)
+            size: new AMap.Size(64, 64)
         });
         manager64 = new AMap.Icon({
             image: "/images/msanager64.png",
-            size: new AMap.Size(32, 32)
+            size: new AMap.Size(64, 64)
         });
         for (var i = 0; i < port_1.length; i++) {
             portMarkers.push(new AMap.Marker({
@@ -97,7 +95,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 title: port_1[i][0]
             }));
         }
-        map.setFitView();
         AMap.service(["AMap.Driving"], function () {
             var drivingOptions = {
                 //当指定此参数后，搜索结果的标注、线路等均会自动添加到此地图上。可选
@@ -114,7 +111,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 number: 'NH7085',
                 // hideMarkers: true,
                 //驾车策略:考虑实时路况;AMap.DrivingPolicy.LEAST_TIME 最快捷模式
-                policy: AMap.DrivingPolicy.LEAST_TIME,  //AMap.DrivingPolicy.REAL_TRAFFIC
+                policy: AMap.DrivingPolicy.REAL_TRAFFIC,  //AMap.DrivingPolicy.LEAST_TIME
                 extensions: 'all'
             };
             driving = new AMap.Driving(drivingOptions);
@@ -292,7 +289,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
     this.doNavigation = function (event) {
         index=0;
         NavigationFlag=false;
-        // console.log("event.data.W_Info.pid:" +event.data.W_Info.pid);
         NavigationEvent=event;
         $.toaster('车辆导航开始!', 'Info', 'info');
         pathSimplifierIns.clearPathNavigators();
@@ -331,6 +327,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                  */
                 else if (index + 1 <= searchPathData.length - 1 && searchTrafficDataFlag[index + 1]) {
                     $.toaster('前方路段堵车!', 'Warning', 'warning');
+                    console.log("前方路段堵车！");
                     $interval.cancel(gpTimer);
                     reSearchOrigin = new AMap.LngLat(navg1.getPosition().getLng(), navg1.getPosition().getLat());
                     // var revent = {};
@@ -340,29 +337,24 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     //     origin: [reSearchOrigin.getLng(), reSearchOrigin.getLat()],
                     //     isTraffic: true
                     // };
-                    $http.get(activityBasepath + '/runtime/process-instances/' + NavigationEvent.data.W_Info.pid + "/variables/W_Info")
+                    $http.get(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.pid + "/W_Info")
                         .success(function (data) {
+                            console.log("data:",data);
                             data.value.x_Coor = reSearchOrigin.getLng();
                             data.value.y_Coor = reSearchOrigin.getLat();
                             console.log("当前点坐标:" + data.value.x_Coor + ',' + data.value.y_Coor);
-                            // console.log();
-                            $http.put(activityBasepath + '/zbq/variables' + NavigationEvent.data.W_Info.pid+ "/W_Info/complete", data)
-                            // $http.put(NavigationEvent.data.W_Info.pid, "W_Info", data)
+                            console.log("NavigationEvent:",NavigationEvent);
+                            $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.pid + "/W_Info/complete", data)
                                 .success(function (data) {
-                                    // $http.post(activityBasepath + '/revents', revent)
-                                    //     .success(function (data) {
-                                    //         console.log("return result", data);
-                                    //
-                                    //     });
                                     $http.post(activityBasepath+"/zbq/tasks/Running")
                                         .success(function (data) {
+                                            NavigationEvent=null;
+                                            expandPathFlag = false;
+                                            $.toaster('堵车情况汇报完毕!', 'Success', 'success');
                                             console.log("堵车，结束running");
                                         });
-                                })
+                                });
                         });
-                    expandPathFlag = false;
-                    NavigationEvent=null;
-                    $.toaster('堵车情况汇报完毕!', 'Success', 'success');
                     // setTimeout(function () {
                     //     if (sync4Search) {
                     //         console.log(reSearchOrigin);
@@ -390,14 +382,29 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 if (index > searchPathData.length - 1) {
                     $interval.cancel(gpTimer);
                     //TODO：put修改isArrival
-                    $http.put(activityBasepath + '/zbq/variables' + NavigationEvent.data.W_Info.pid+ "/W_Info/complete", data)
+                    // $http.put(activityBasepath + '/zbq/variables' + NavigationEvent.data.W_Info.pid+ "/W_Info/complete", data)
+                    //     .success(function (data) {
+                    //         console.log("put wagon W_Info", data);
+                    //         $http.post(activityBasepath+"/zbq/tasks/Running")
+                    //             .success(function (data) {
+                    //                 console.log("到达目的地，结束running");
+                    //             });
+                    //
+                    //     });
+                    $http.get(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.pid + "/W_Info")
                         .success(function (data) {
-                            console.log("put wagon W_Info", data);
-                            $http.post(activityBasepath+"/zbq/tasks/Running")
+                            console.log("data:",data);
+                            data.value.isArrival = true;
+                            $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.pid + "/W_Info/complete", data)
                                 .success(function (data) {
-                                    console.log("到达目的地，结束running");
+                                    $http.post(activityBasepath+"/zbq/tasks/Running")
+                                        .success(function (data) {
+                                            NavigationEvent=null;
+                                            $.toaster('到达终点!', 'Success', 'success');
+                                            console.log("到达终点！");
+                                            expandPathFlag = false;
+                                        });
                                 });
-
                         });
                     return false;
                 }
@@ -420,86 +427,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 // $.toaster('路径扩张完成!', 'Success', 'success');
                 return true;
             };
-            // doSearch4Change = function () {
-            //     console.log("doSearch4Change执行");
-            //     driving=[];
-            //     this.estimatedTime = 0;
-            //     // this.reSearchOrigin = new AMap.Lnnavg1.getPosition().getLnnavg1.getPosition().getLat());
-            //     driving.search(this.reSearchOrigin, this.reSearchDestination, function (status, result) {
-            //         console.log("search开始");
-            //         this.searchPathData = [];
-            //         this.searchDistanceData = [];
-            //         this.searchTimeData = [];
-            //         this.searchSpeedData = [];
-            //         this.searchTrafficData = [];
-            //
-            //         for (var i = 0; i < result.routes.length; i++) {
-            //             for (var j = 0; j < result.routes[i].steps.length; j++) {
-            //                 this.searchPathData.push(result.routes[i].steps[j].path.slice(0));
-            //                 this.searchDistanceData.push(result.routes[i].steps[j].distance);
-            //                 this.searchTimeData.push(result.routes[i].steps[j].time);
-            //                 this.searchSpeedData.push(result.routes[i].steps[j].distance * 0.001 / result.routes[i].steps[j].time * 360000);
-            //                 this.searchTrafficData.push(result.routes[i].steps[j].tmcs.slice(0));
-            //
-            //             }
-            //         }
-            //         this.searchTrafficDataFlag = [];
-            //         for (var k = 0; k < this.searchTrafficData.length; k++) {
-            //             this.searchTrafficDataFlag.push(false);
-            //             for (var m = 0; m < this.searchTrafficData[k].length; m++) {
-            //                 if (this.searchTrafficData[k][m].status === '拥堵' || this.searchTrafficData[k][m].status === '严重拥堵') {
-            //                     this.searchTrafficDataFlag[k] = true;
-            //                 }
-            //             }
-            //         }
-            //         this.estimatedTime = 0;
-            //         this.estimatedDistance = 0;
-            //         for (var i = 0; i < result.routes.length; i++) {
-            //             this.estimatedTime = this.estimatedTime + result.routes[i].time;
-            //             this.estimatedDistance = this.estimatedDistance + result.routes[i].distance;
-            //         }
-            //         this.searchthis.RemainingTime = this.estimatedTime;
-            //         $("input[id='this.estimatedTime']").val(this.estimatedTime.toString());
-            //         // MapFactory.judgementTime(this.remainingTime, this.estimatedTime);
-            //         console.log("search结束");
-            //         sync4Expend = true;
-            //     });
-            //     console.log("doSearch4Change结束");
-            // };
-            /*
-            频繁search出bug原因：在于driving.search()中回调函数function(status,result)的异步执行
-             */
-            // doExpand4Change = function () {
-            //     console.log("doExpand4Change执行");
-            //
-            //     if (this.reSearchOrigin.distance(this.reSearchDestination) < 10) {
-            //         $interval.cancel(gpTimer);
-            //         return false;
-            //     }
-            //     index = 0;
-            //     data[0].path = this.searchPathData[index].slice(0);
-            //     //延展路径
-            //     pathSimplifierIns.setData(data);
-            //
-            //     //重新建立一个巡航器
-            //navg1 = pathSimplifierIns.createPathNavigator(0, {
-            //         loop: false,
-            //         // speed: 6000
-            //     });
-            //navg1.setSpeed(this.searchSpeedData[index]);
-            //
-            //navg1.start();
-            //
-            //navg1.moveToPoint(0, 0);
-            //
-            //     this.totalTime += this.searchTimeData[index];
-            //     this.searchthis.RemainingTime = this.searchthis.RemainingTime - this.searchTimeData[index];
-            //     this.remainingTime = this.deadline - this.totalTime;
-            //     $("input[id='this.remainingTime']").val(this.remainingTime.toString());
-            //     console.log("doExpand4Change结束");
-            //     sync4Search = true;
-            //     return true;
-            // };
         };
 
         getPosition = function () {
@@ -553,7 +480,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
         pvars[pIdxs['V_TargLoc']]['value'] = {
             'lname': ports[ports.length - 1][0],
             'x_coor': ports[ports.length - 1][1],
-            'x_coor': ports[ports.length - 1][2],
+            'y_coor': ports[ports.length - 1][2],
             'realTime': ports[ports.length - 1][3]
         };
         //设置每段的起始港口
@@ -589,13 +516,15 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     $.toaster('<---------到达港口--------->', 'Vessel', 'success');
                     console.log("<---------到达港口--------->");
                     portIdx++;
-                    pvars[pIdxs['PrePort']]['value'] = angular.copy(pvars[pIdxs['NextPort']]['value']);
-                    pvars[pIdxs['NextPort']]['value'] = {
-                        'lname': ports[portIdx][0],
-                        'x_coor': ports[portIdx][1],
-                        'y_coor': ports[portIdx][2],
-                        'realTime': ports[portIdx][3]
-                    };
+                    if(portIdx<ports.length) {
+                        pvars[pIdxs['PrePort']]['value'] = angular.copy(pvars[pIdxs['NextPort']]['value']);
+                        pvars[pIdxs['NextPort']]['value'] = {
+                            'lname': ports[portIdx][0],
+                            'x_coor': ports[portIdx][1],
+                            'y_coor': ports[portIdx][2],
+                            'realTime': ports[portIdx][3]
+                        };
+                    }
                     // 到了港口，就设置 船进入其他状态
                     pvars[pIdxs['State']]['value'] = 'arrival';
                     //TODO：设置到港,完成任务
@@ -656,6 +585,4 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
 
         }, 1000);
     }
-
-
 });
