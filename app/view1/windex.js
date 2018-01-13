@@ -9,45 +9,28 @@ angular.module('myApp.view1', ['ngRoute'])
         });
     }])
 
-    .controller('View1Ctrl', function ($http, $scope, MapService, VesselProcessService, $interval, Session) {
-        $scope.V_id = "413362260";
-        $scope.sailor = 'admin';
-        $scope.wInst = undefined;
-        $scope.vVariables = undefined;
+    .controller('View1Ctrl', function ($http, $scope, MapService,MapFactory,VesselProcessService, $interval, Session) {
+        $scope.V_id = "413362260";  //船的id
+        $scope.sailor = 'admin';    //操作员
+        $scope.wInst = undefined;   //
+        $scope.vVariables = undefined;  //
+        //Voyaging
+        $scope.delay = -1;  //
+        $scope.vti = {};    //
+        $scope.ZoomInVal = 24 * 60 * 60 * 1000 / 60000; // 1day --> 1min  //比例换算
+        $scope.portIdx = {};    //
+        $scope.cnt = -1;    //
+        $scope.ports = {};  //
+        $scope.pvars = {};  //
+        $scope.pIdxs = {};    //
+        $scope.marker = {};   //
+        $scope.vState = {}; //
+        $scope.pid = {};  //
+        $scope.ADTi = {};
         if (Session.getEventId() === null) {
             Session.createEventId();
         }
-        $.toaster({
-            settings: {
-                toaster: {
-                    css: {
-                        top: '10%',
-                        left: '5%'
-                    }
-                },
-                toast:
-                    {
-                        fade: {in: 'fast', out: 'slow'},
-
-                        display: function ($toast) {
-                            return $toast.fadeIn(settings.toast.fade.in);
-                        },
-
-                        remove: function ($toast, callback) {
-                            return $toast.animate(
-                                {
-                                    opacity: '0',
-                                    height: '0px'
-                                },
-                                {
-                                    duration: settings.toast.fade.out,
-                                    complete: callback
-                                });
-                        }
-                    },
-                timeout: 3000
-            }
-        });
+        MapFactory.GetRandomNum(0,100);
         MapService.initMap();
         // 入口 ：
         // 侦听流程实例，获取启动vessel-process Instances 的船号等信息
@@ -124,15 +107,16 @@ angular.module('myApp.view1', ['ngRoute'])
             if (event.data.W_Info.needPlan) {
                 var origin = new AMap.LngLat(event.data.W_Info.x_Coor, event.data.W_Info.y_Coor);
                 var destination = new AMap.LngLat(event.data.W_Info.w_TargLoc.x_coor, event.data.W_Info.w_TargLoc.y_coor);
-                var deadline = event.data.W_Info.planRes;
+                // var deadline = event.data.W_Info.planRes;
+                var deadline = 1000000;
                 MapService.doSearch(origin, destination, deadline);
-                $interval(function () {
-                    console.log(NavigationFlag)
-                    if(NavigationFlag){
-                        MapService.doNavigation(event);
-                    }
-                },1000);
-                // MapService.doNavigation(event);
+                // $interval(function () {
+                //     console.log("NavigationFlag",NavigationFlag);
+                //     if (NavigationFlag) {
+                //         MapService.doNavigation(event);
+                //     }
+                // }, 1000);
+                MapService.doNavigation(event);
             }
         };
         $scope.startVessel = function () {
@@ -171,22 +155,8 @@ angular.module('myApp.view1', ['ngRoute'])
         };
 
 
-
-
-        //Voyaging
-        $scope.delay = -1;
-        $scope.vti = {};
-        $scope.ZoomInVal = 24*60*60*1000 / 60000; // 1day --> 1min
-        $scope.portIdx = {};
-        $scope.cnt = -1;
-        $scope.ports = {};
-        $scope.pvars = {};
-        $scope.pIdxs={};
-        $scope.marker={};
-        $scope.vState = {};
-        $scope.pid={};
         $scope.voyaging = function (pid, nowVid, vars) {
-            console.log('vars:' , vars);
+            console.log('vars:', vars);
             //vVariables = vars;
             // 定位模块
 
@@ -195,10 +165,10 @@ angular.module('myApp.view1', ['ngRoute'])
             $scope.ports = port[nowVid];// 港口数据
             $scope.portIdx = 0;
             $scope.pvars = vars;
-            $scope.pid=pid;
+            $scope.pid = pid;
 
             // console.log($scope.vdata[1][1]);
-              $scope.marker = new AMap.Marker({ // 加点
+            $scope.marker = new AMap.Marker({ // 加点
                 map: map,
                 position: [$scope.vdata[0][1], $scope.vdata[0][2]]
             });
@@ -243,116 +213,119 @@ angular.module('myApp.view1', ['ngRoute'])
             $scope.delay = 0;
             //$scope.delay = (Date.parse($scope.vdata[$scope.cnt+1][3]) - Date.parse($scope.vdata[$scope.cnt][3]))/$scope.ZoomInVal;
             $scope.cnt = 0; // 循环次数
-        }
+        };
 
-        $scope.$watch('cnt' , function(newCnt){
-            console.log("new Delay",$scope.delay);
+        $scope.$watch('cnt', function (newCnt) {
+            // console.log("new Delay", $scope.delay);
             // console.log("oldDelay",oldDelay);
-          if($scope.cnt  !== -1){
-              console.log("diyici : " , $scope.delay);
-              $scope.vti = $interval(function(){
-                  $scope.vState = $scope.pvars[$scope.pIdxs['State']]['value'];
-                  console.log("$scope.vState:",$scope.vState);
-                  if ($scope.vState == 'voyaging') {// 进入voyaging 就开始PUT
-                      // ，初始时流程启动，就开始PUT
-                      // 上传流程变量
-                      // 判断是否到达next_port;
-                      if ($scope.vdata[$scope.cnt][1] == $scope.ports[$scope.portIdx][1] && $scope.vdata[$scope.cnt][2] == $scope.ports[$scope.portIdx][2]) {
-                          $.toaster('<---------到达港口--------->', 'Vessel', 'success');
-                          console.log("<---------到达港口--------->");
-                          $scope.portIdx++;
-                          if($scope.portIdx<$scope.ports.length) {
-                              $scope.pvars[$scope.pIdxs['PrePort']]['value'] = angular.copy($scope.pvars[$scope.pIdxs['NextPort']]['value']);
-                              $scope.pvars[$scope.pIdxs['NextPort']]['value'] = {
-                                  'lname': $scope.ports[$scope.portIdx][0],
-                                  'x_coor': $scope.ports[$scope.portIdx][1],
-                                  'y_coor': $scope.ports[$scope.portIdx][2],
-                                  'realTime': $scope.ports[$scope.portIdx][3]
-                              };
-                          }
-                          // 到了港口，就设置 船进入其他状态
-                          $scope.pvars[$scope.pIdxs['State']]['value'] = 'arrival';
-                          $scope.vState = 'arrival';
+            if ($scope.cnt !== -1) {
+                console.log("diyici : ", $scope.delay);
+                $scope.vti = $interval(function () {
+                    $scope.vState = $scope.pvars[$scope.pIdxs['State']]['value'];
+                    console.log("$scope.vState:", $scope.vState);
+                    if ($scope.vState == 'voyaging') {// 进入voyaging 就开始PUT
+                        // ，初始时流程启动，就开始PUT
+                        // 上传流程变量
+                        // 判断是否到达next_port;
+                        if ($scope.vdata[$scope.cnt][1] == $scope.ports[$scope.portIdx][1] && $scope.vdata[$scope.cnt][2] == $scope.ports[$scope.portIdx][2]) {
+                            $.toaster('<---------到达港口--------->', 'Vessel', 'success');
+                            console.log("<---------到达港口--------->");
+                            $scope.portIdx++;
+                            if ($scope.portIdx < $scope.ports.length) {
+                                $scope.pvars[$scope.pIdxs['PrePort']]['value'] = angular.copy($scope.pvars[$scope.pIdxs['NextPort']]['value']);
+                                $scope.pvars[$scope.pIdxs['NextPort']]['value'] = {
+                                    'lname': $scope.ports[$scope.portIdx][0],
+                                    'x_coor': $scope.ports[$scope.portIdx][1],
+                                    'y_coor': $scope.ports[$scope.portIdx][2],
+                                    'realTime': $scope.ports[$scope.portIdx][3]
+                                };
+                            }
+                            // 到了港口，就设置 船进入其他状态
+                            $scope.pvars[$scope.pIdxs['State']]['value'] = 'arrival';
+                            $scope.vState = 'arrival';
+                            //更换港口图标
+                            for(var i=0;i<portMarkers.length;i++){
+                                if(portMarkers[i].title===$scope.vdata[$scope.cnt][0]){
+                                    portMarkers[i].icon=uselessPort64;
+                                }
+                            }
+                        }
+                        // 修改流程变量---Now_loc
+                        $scope.pvars[$scope.pIdxs['NowLoc']]['value'] = {
+                            'lname': null,
+                            'x_coor': $scope.vdata[$scope.cnt][1],
+                            'y_coor': $scope.vdata[$scope.cnt][2],
+                            'timeStamp': Date.parse($scope.vdata[$scope.cnt][3]) - Date.parse($scope.pvars[$scope.pIdxs['PrePort']]['value']['realTime']),
+                            'velocity': $scope.vdata[$scope.cnt][4]
+                        };
+                        // $.toaster("NowLoc.timeStamp : " + $scope.pvars[$scope.pIdxs['NowLoc']]['value']['timeStamp'],'Vessel','info');
+                        // console.log("NowLoc.timeStamp : " + $scope.pvars[$scope.pIdxs['NowLoc']]['value']['timeStamp']);
+                        if ($scope.cnt < $scope.len) {
+                            $scope.marker.hide();
+                            $scope.marker = new AMap.Marker({ // 加点
+                                map: map,
+                                position: [$scope.vdata[$scope.cnt][1], $scope.vdata[$scope.cnt][2]],
+                                icon: new AMap.Icon({ // 复杂图标
+                                    size: new AMap.Size(64, 64), // 图标大小
+                                    image: "images/vessel.png",// 大图地址
+                                })
+                            });
+
+                            //PUT Variable to Process Engine Or Global cache
+                            if ($scope.vState == 'arrival') {
+                                //TODO : 修改StartTime
+                                var ms = Date.parse($scope.pvars[$scope.pidxs['StartTime']].value) + $scope.pvars[$scope.pidxs['NowLoc']].value.timeStamp;
+                                var d = new Date();
+                                d.setTime(ms);
+                                if (d != 'Invalid Date') {
+                                    scope.pvars[$scope.pidxs['StartTime']].value = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
+                                }
+                                //TODO：设置到港,完成任务
+                                var varUrl = activityBasepath + '/zbq/variables' + pid + '/complete';
+                                $http.put(varUrl, $scope.pvars)
+                                    .success(function (res) {
+                                        console.log("Voyaging Task 结束，将startTime上传");
+                                        $http.post(activityBasepath + '/zbq/tasks/Voyaging')
+                                            .success(function (data) {
+                                                $.toaster('到达港口!', 'Success', 'success');
+                                                console.log("到达港口 ： ", $scope.pvars[$scope.pIdxs['PrePort']]['value']);
+                                            });
+                                    });
+                            } else {
+                                VesselProcessService.PutProcessVariables($scope.pid, $scope.pvars).then(function (resp) {
+                                    // $.toaster('PUT once more','Vessel','info');
+                                    // $.toaster('$scope.cnt : '+$scope.cnt,'Vessel','info');
+                                    // console.log("PUT once more");
+                                    // console.log('$scope.cnt : '+$scope.cnt);
+                                    console.log("cnt", $scope.cnt);
+                                    var tCnt = $scope.cnt + 1;
+                                    console.log("Lng:", [$scope.vdata[$scope.cnt][1], $scope.vdata[$scope.cnt][2]]);
+                                    $scope.delay = (Date.parse($scope.vdata[tCnt][3]) - Date.parse($scope.vdata[tCnt - 1][3])) / $scope.ZoomInVal;
+                                    //if($scope.vState == 'voyaging'){
+                                    $scope.cnt++;
+                                    // }else if($scope.vState == 'arrival'){
+
+                                    // }
+                                });
+                            }
+                        }
 
 
-                      }
-                      // 修改流程变量---Now_loc
-                      $scope.pvars[$scope.pIdxs['NowLoc']]['value'] = {
-                          'lname': null,
-                          'x_coor': $scope.vdata[$scope.cnt][1],
-                          'y_coor': $scope.vdata[$scope.cnt][2],
-                          'timeStamp': Date.parse($scope.vdata[$scope.cnt][3]) - Date.parse($scope.pvars[$scope.pIdxs['PrePort']]['value']['realTime']),
-                          'velocity': $scope.vdata[$scope.cnt][4]
-                      };
-                      // $.toaster("NowLoc.timeStamp : " + $scope.pvars[$scope.pIdxs['NowLoc']]['value']['timeStamp'],'Vessel','info');
-                      // console.log("NowLoc.timeStamp : " + $scope.pvars[$scope.pIdxs['NowLoc']]['value']['timeStamp']);
-                      if ($scope.cnt < $scope.len) {
-                          $scope.marker.hide();
-                          $scope.marker = new AMap.Marker({ // 加点
-                              map: map,
-                              position: [$scope.vdata[$scope.cnt][1], $scope.vdata[$scope.cnt][2]],
-                              icon: new AMap.Icon({ // 复杂图标
-                                  size: new AMap.Size(64, 64), // 图标大小
-                                  image: "images/vessel.png",// 大图地址
-                              })
-                          });
+                    }
 
-                          //PUT Variable to Process Engine Or Global cache
-                          if($scope.vState == 'arrival'){
-                              //TODO : 修改StartTime
-                              var ms = Date.parse($scope.pvars[$scope.pidxs['StartTime']].value) + $scope.pvars[$scope.pidxs['NowLoc']].value.timeStamp;
-                              var d = new Date();
-                              d.setTime(ms);
-                              if(d != 'Invalid Date'){
-                                  scope.pvars[$scope.pidxs['StartTime']].value = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
-                              }
-                              //TODO：设置到港,完成任务
-                              var varUrl=activityBasepath+'/zbq/variables'+pid+'/complete';
-                              $http.put(varUrl,$scope.pvars)
-                                  .success(function (res) {
-                                      console.log("Voyaging Task 结束，将startTime上传");
-                                      $http.post(activityBasepath+'/zbq/tasks/Voyaging')
-                                          .success(function (data) {
-                                              $.toaster('到达港口!', 'Success', 'success');
-                                              console.log("到达港口 ： " ,  $scope.pvars[$scope.pIdxs['PrePort']]['value']);
-                                          });
-                                  });
-                          }else{
-                              VesselProcessService.PutProcessVariables($scope.pid, $scope.pvars).then(function (resp) {
-                                  // $.toaster('PUT once more','Vessel','info');
-                                  // $.toaster('$scope.cnt : '+$scope.cnt,'Vessel','info');
-                                  // console.log("PUT once more");
-                                  // console.log('$scope.cnt : '+$scope.cnt);
-                                  console.log("cnt",$scope.cnt);
-                                  var tCnt = $scope.cnt + 1;
-                                  console.log("Lng:",[$scope.vdata[$scope.cnt][1], $scope.vdata[$scope.cnt][2]]);
-                                  $scope.delay=(Date.parse($scope.vdata[tCnt][3]) - Date.parse($scope.vdata[tCnt-1][3]))/$scope.ZoomInVal;
-                                  //if($scope.vState == 'voyaging'){
-                                  $scope.cnt++;
-                                  // }else if($scope.vState == 'arrival'){
+                }, $scope.delay, 1);
 
-                                  // }
-                              });
-                          }
-                      }
-
-
-                  }
-
-              } , $scope.delay , 1);
-
-          }
+            }
         });
 
         /**
          *监听船的状态 Voyaging/Anchoring-Docking State.
          * @type {{}}
          */
-        $scope.ADTi = {}
-        $scope.$watch('vState' , function(newState){
-            if(newState == 'arrival'){
-                    // 如果不是anchoring / docking状态就停止传送，而是侦听是否有新的voyaging状态出现
-                $scope.ADTi = $interval(function(){
+        $scope.$watch('vState', function (newState) {
+            if (newState == 'arrival') {
+                // 如果不是anchoring / docking状态就停止传送，而是侦听是否有新的voyaging状态出现
+                $scope.ADTi = $interval(function () {
                     var promise1 = VesselProcessService.GetProcessVariablesById($scope.pid);
                     promise1.then(function (data) {  // 调用承诺API获取数据 .resolve
                         $scope.pvars = data;
@@ -364,16 +337,16 @@ angular.module('myApp.view1', ['ngRoute'])
                         if ($scope.pvars[$scope.pIdxs['State']]['value'] == 'arrival') {
                             // $.toaster("船处于其他状态，anchoring /docking",'Vessel','warning');
                             console.log("船处于其他状态，anchoring /docking")
-                        }else if($scope.pvars[$scope.pIdxs['State']]['value'] == 'voyaging'){
+                        } else if ($scope.pvars[$scope.pIdxs['State']]['value'] == 'voyaging') {
                             // var temp=$scope.cnt+1;
                             // $scope.delay=(Date.parse($scope.vdata[temp][3]) - Date.parse($scope.vdata[$scope.cnt][3]))/ZoomInVal;
                             $scope.vState = 'voyaging';
-                            $scope.delay=0;
+                            $scope.delay = 0;
                             $scope.cnt++;
                             $interval.cancel($scope.ADTi);
                         }
                     });
-                } , 1000);
+                }, 1000);
             }
         });
 
@@ -382,40 +355,51 @@ angular.module('myApp.view1', ['ngRoute'])
          */
         $scope.apply_time = '1970-01-01';
         $scope.sp_name = '';
-        $scope.apply = function(){
-            $http.get(activityBasepath+'/zbq/variables/'+$scope.pid)
-                .success(function(data){
+        $scope.apply = function () {
+            $http.get(activityBasepath + '/zbq/variables/' + $scope.pid)
+                .success(function (data) {
                     $scope.pvars = data;
                     $scope.pIdxs = VesselProcessService.FindVarIdxByName($scope.pvars);
                     var ms = Date.parse($scope.pvars[$scope.pidxs['StartTime']].value) + $scope.pvars[$scope.pidxs['NowLoc']].value.timeStamp;
                     var d = new Date();
                     d.setTime(ms);
-                    if(d != 'Invalid Date'){
+                    if (d != 'Invalid Date') {
                         $scope.apply_time = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
                     }
-                    var var_apply_time =  {
-                        'name' : 'apply_time' ,
-                        'type' :  'date' ,
-                        'scope' : 'local' ,
-                        'value' : $scope.apply_time
+                    var var_apply_time = {
+                        'name': 'apply_time',
+                        'type': 'date',
+                        'scope': 'local',
+                        'value': $scope.apply_time
                     };
                     var var_sp_name = {
-                        'name' : 'sp_name' ,
-                        'type' :  'String' ,
-                        'scope' : 'local' ,
-                        'value' : $scope.sp_name
+                        'name': 'sp_name',
+                        'type': 'String',
+                        'scope': 'local',
+                        'value': $scope.sp_name
                     };
 
-                    $scope.pvars.push(var_apply_time , var_sp_name);
-                    var varUrl=activityBasepath+'/zbq/variables'+$scope.pid+'/complete';
-                    $http.put(varUrl,$scope.pvars)
-                        .success(function (res) {
+                    $scope.pvars.push(var_apply_time, var_sp_name);
+                    var varUrl = activityBasepath + '/zbq/variables' + $scope.pid + '/complete';
+                    $http.put(varUrl, $scope.pvars)
+                        .success(function (data) {
                             console.log("Voyaging Task 结束，将startTime上传");
-                            $http.post(activityBasepath+'/zbq/tasks/Voyaging')
+                            $scope.pvars = data;
+                            $scope.pIdxs = VesselProcessService.FindVarIdxByName($scope.pvars);
+                            var data2VMC = {
+                                'Apply_Id': MapFactory.newGuid,
+                                'V_pid': $scope.pid,
+                                'V_id': $scope.V_id,
+                                'V_name':'',
+                                'V_ApplyTime':var_apply_time.value,
+                                'V_VoyagingTime':'',
+                                'V_TargetLocationList':$scope.pvars[$scope.pIdxs['TargLocList']]['value'],
+                                'SparePartName':var_sp_name.value
+                            }
+                            $http.post(activityBasepath + "/coord/message/Msg_StartVMC", data2VMC)
                                 .success(function (data) {
-                                    $.toaster('到达港口!', 'Success', 'success');
-                                    console.log("到达港口 ： " ,  $scope.pvars[$scope.pIdxs['PrePort']]['value']);
-                                });
+                                    console.log("Send Message to VMC!", data);
+                                })
                         });
                 });
         };

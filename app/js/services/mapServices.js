@@ -5,40 +5,59 @@ App.factory('MapFactory', function ($http) {
         setDeadline: function (deadline) {
             // $("input[id='remainingTime']").val(deadline.toString());
             return remainingTime;
-        },
-        setPort : function (title, position) {
-        new AMap.Marker({
-            map: map,
-            icon: port64,
-            position: position,
-            title: title
-        });
-    }
+        }, GetRandomNum: function (Min, Max) {
+            var Range = Max - Min;
+            var Rand1 = Math.random();
+            var Rand2 = Math.random();
+            if (Rand1 === Rand2) {
+                return this.GetRandomNum(Min, Max);
+            } else {
+                console.log([(Min + Math.round(Rand1 * Range)), (Min + Math.round(Rand2 * Range))]);
+                return [(Min + Math.round(Rand1 * Range)), (Min + Math.round(Rand2 * Range))];
+            }
+        }, newGuid: function () {
+            var guid = "";
+            for (var i = 1; i <= 32; i++) {
+                var n = Math.floor(Math.random() * 16.0).toString(16);
+                guid += n;
+                if ((i == 8) || (i == 12) || (i == 16) || (i == 20))
+                    guid += "-";
+            }
+            console.log("GUID",guid);
+            return guid;
+        }
     }
 });
-var NavigationFlag=false;
-var pathSimplifierIns = null;
-var map=null;
-var navg1 = null;
+var NavigationFlag = false;
+var pathSimplifierIns = null;  //导航实例
+var map = null;  //地图实例
+var navg1 = null;  //巡航器实例
+
 var searchPathData = [];
-var searchDistanceData=[];
-var searchTimeData=[];
-var searchSpeedData=[];
-var searchTrafficData=[];
-var searchTrafficDataFlag=[];
-var estimatedTime = 0;
-var estimatedDistance = 0;
-var totalTime = 0;
-var deadline = 0;
-var searchRemainingTime=0;
-var remainingTime = 0;
-var reSearchOrigin={};
-var reSearchDestination={};
-var expandPathFlag=null;
-var driving = {};
-var NavigationData = {};
-var NavigationEvent={};
-var index=0;
+var searchDistanceData = [];
+var searchTimeData = [];
+var searchSpeedData = [];
+var searchTrafficData = [];
+var searchTrafficDataFlag = [];
+var TrafficNumber = [];
+
+var trueEstimatedTime = 0; //真实话费总时间
+var estimatedTime = 0;  //预期时间
+var estimatedDistance = 0;  //预期距离
+
+var originTime = 0;   //车的起始时间
+var totalTime = 0; //已花费时间
+var deadline = 0;  //时限
+
+// var searchRemainingTime = 0; //路段剩余时间
+var remainingTime = 0; //时限剩余时间
+var reSearchOrigin = {}; //车起点
+var reSearchDestination = {}; //目的地
+var expandPathFlag = true;
+var driving = {};  //路径规划实例
+var NavigationData = {}; //
+var NavigationEvent = {}; //
+var index = 0;
 
 var port64 = null;  //使用中的港口，icon类
 var uselessPort64 = null;   //未使用中的港口，icon类
@@ -152,7 +171,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     autoSetFitView: true,
                     pathLineStyle: {
                         strokeStyle: 'white',
-                        lineWidth: 4,
+                        lineWidth: 6,
                         dirArrowStyle: true
                     },
                     pathNavigatorStyle: {
@@ -172,6 +191,37 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 }
             });
             window.pathSimplifierIns = pathSimplifierIns;
+        });
+        $.toaster({
+            settings: {
+                toaster: {
+                    css: {
+                        top: '10%',
+                        left: '5%'
+                    }
+                },
+                toast:
+                    {
+                        fade: {in: 'fast', out: 'slow'},
+
+                        display: function ($toast) {
+                            return $toast.fadeIn(settings.toast.fade.in);
+                        },
+
+                        remove: function ($toast, callback) {
+                            return $toast.animate(
+                                {
+                                    opacity: '0',
+                                    height: '0px'
+                                },
+                                {
+                                    duration: settings.toast.fade.out,
+                                    complete: callback
+                                });
+                        }
+                    },
+                timeout: 3000
+            }
         });
         $.toaster('初始化成功！', 'Info', 'success');
     };
@@ -217,9 +267,9 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
     };
 
 
-    this.doSearch = function (SearchOrigin, SearchDestination, deadline) {
+    this.doSearch = function (SearchOrigin, SearchDestination, line) {
         $.toaster('路径规划启动!', 'Info', 'info');
-        remainingTime = MapFactory.setDeadline(this.deadline);
+        deadline = MapFactory.setDeadline(line);
         driving.clear();
         driving.search(SearchOrigin, SearchDestination, function (status, result) {
             console.log("search开始");
@@ -229,32 +279,44 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             $("input[id='this.reSearchOrigin']").val(reSearchOrigin.getLng().toString() + "," + reSearchOrigin.getLat().toString());
             $("input[id='this.reSearchDestination']").val(reSearchDestination.getLng().toString() + "," + reSearchDestination.getLat().toString());
 
-            searchPathData=[];
-            searchDistanceData =[];
-            searchTimeData =[];
-            searchSpeedData =[];
-            searchTrafficData =[];
+            searchPathData = [];
+            searchDistanceData = [];
+            searchTimeData = [];
+            searchSpeedData = [];
+            // searchTrafficData = [];
 
+            TrafficNumber = MapFactory.GetRandomNum(0, result.routes[0].steps.length + (result.routes[0].steps.length / 3));
             for (var i = 0; i < result.routes.length; i++) {
                 for (var j = 0; j < result.routes[i].steps.length; j++) {
                     searchPathData.push(result.routes[i].steps[j].path.slice(0));
                     searchDistanceData.push(result.routes[i].steps[j].distance);
-                    searchTimeData.push(result.routes[i].steps[j].time);
-                    searchSpeedData.push(result.routes[i].steps[j].distance / result.routes[i].steps[j].time * 24*60);
-                    searchTrafficData.push(result.routes[i].steps[j].tmcs.slice(0));
-
-                }
-            }
-            searchTrafficDataFlag=[];
-            for (var k = 0; k < searchTrafficData.length; k++) {
-                searchTrafficDataFlag.push(false);
-                for (var m = 0; m < searchTrafficData[k].length; m++) {
-                    if (searchTrafficData[k][m].status === '拥堵' || searchTrafficData[k][m].status === '严重拥堵') {
-                        searchTrafficDataFlag[k] = true;
-                        searchSpeedData[k] = searchSpeedData[k] / 2;
+                    if (TrafficNumber[0] === j) {
+                        searchTimeData.push(result.routes[i].steps[j].time * 2);
+                        searchSpeedData.push(result.routes[i].steps[j].distance / result.routes[i].steps[j].time * $scope.ZoomInVal / 2);
+                    } else if (TrafficNumber[1] === j) {
+                        searchTimeData.push(result.routes[i].steps[j].time * 4);
+                        searchSpeedData.push(result.routes[i].steps[j].distance / result.routes[i].steps[j].time * $scope.ZoomInVal / 4);
+                    } else {
+                        searchTimeData.push(result.routes[i].steps[j].time);
+                        searchSpeedData.push(result.routes[i].steps[j].distance / result.routes[i].steps[j].time * $scope.ZoomInVal);
                     }
+                    // searchTrafficData.push(result.routes[i].steps[j].tmcs.slice(0));
                 }
             }
+            trueEstimatedTime = 0;
+            for (var i = 0; i < searchTimeData.length; i++) {
+                trueEstimatedTime += searchTimeData[i];
+            }
+            // searchTrafficDataFlag=[];
+            // for (var k = 0; k < searchTrafficData.length; k++) {
+            //     searchTrafficDataFlag.push(false);
+            //     for (var m = 0; m < searchTrafficData[k].length; m++) {
+            //         if (searchTrafficData[k][m].status === '拥堵' || searchTrafficData[k][m].status === '严重拥堵') {
+            //             searchTrafficDataFlag[k] = true;
+            //             searchSpeedData[k] = searchSpeedData[k] / 2;
+            //         }
+            //     }
+            // }
             // this.searchTrafficDataFlag[10] = true;
             estimatedTime = 0;
             estimatedDistance = 0;
@@ -262,26 +324,9 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 estimatedTime = estimatedTime + result.routes[i].time;
                 estimatedDistance = estimatedDistance + result.routes[i].distance;
             }
-            searchRemainingTime = estimatedTime;
+            // searchRemainingTime = estimatedTime;
             $("input[id='this.estimatedTime']").val(estimatedTime.toString());
-
-            // var revent = {};
-            // revent.type = eventType.Msg_RWPlan;
-            // //  revent.id = Session.generateId();
-            // revent.data = {
-            //     origin: [reSearchOrigin.getLng(), reSearchOrigin.getLat()],
-            //     destination: [reSearchDestination.getLng(), reSearchDestination.getLat()],
-            //     remainingTime: remainingTime,
-            //     estimatedTime: estimatedTime,
-            //     estimatedDistance: estimatedDistance
-            // };
-            // $http.post(activityBasepath + '/coord/message', revent)
-            //     .success(function (data) {
-            //         console.log("return result", data);
-            //
-            //     });
-            NavigationFlag=true;
-            // console.log(searchPathData);
+            // NavigationFlag = true;
             $.toaster('路径规划完成!', 'Success', 'success');
             console.log("search结束");
         });
@@ -289,13 +334,19 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
 
 
     this.doNavigation = function (event) {
-        index=0;
-        NavigationFlag=false;
-        NavigationEvent=event;
+        index = 0;
+        // NavigationFlag = false;
+        NavigationEvent = event;
         $.toaster('车辆导航开始!', 'Info', 'info');
         pathSimplifierIns.clearPathNavigators();
-        // var sync4Search = true;
-        // var sync4Expend = false;
+        if (TrafficNumber[0] === index) {
+            pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'yellow';
+        } else if (TrafficNumber[1] === index) {
+            pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'red';
+        }
+        else {
+            pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
+        }
         var gpTimer = null;
         totalTime = 0;
         NavigationData = [{
@@ -310,8 +361,9 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             loop: false,
         });
         navg1.setSpeed(searchSpeedData[index]);
-        totalTime = totalTime + searchTimeData[index];
-        searchRemainingTime = searchRemainingTime - searchTimeData[index];
+
+        totalTime += searchTimeData[index];
+        // searchRemainingTime -= searchTimeData[index];
         remainingTime = deadline - totalTime;
         $("input[id='remainingTime']").val(remainingTime.toString());
 
@@ -337,13 +389,13 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     //     });
                     $http.get(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.pid + "/W_Info")
                         .success(function (data) {
-                            console.log("data:",data);
+                            console.log("data:", data);
                             data.value.isArrival = true;
                             $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.pid + "/W_Info/complete", data)
                                 .success(function (data) {
-                                    $http.post(activityBasepath+"/zbq/tasks/Running")
+                                    $http.post(activityBasepath + "/zbq/tasks/Running")
                                         .success(function (data) {
-                                            NavigationEvent=null;
+                                            NavigationEvent = null;
                                             $.toaster('到达终点!', 'Success', 'success');
                                             console.log("到达终点！");
                                             expandPathFlag = false;
@@ -352,20 +404,23 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                         });
                     return false;
                 }
+                if (TrafficNumber[0] === index) {
+                    pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'yellow';
+                } else if (TrafficNumber[1] === index) {
+                    pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'red';
+                }
+                else {
+                    pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
+                }
                 NavigationData[0].path = searchPathData[index].slice(0);
-
-                //延展路径
                 pathSimplifierIns.setData(NavigationData);
-                //重新建立一个巡航器
                 navg1 = pathSimplifierIns.createPathNavigator(0, {
                     loop: false,
                 });
-
                 navg1.setSpeed(searchSpeedData[index]);
                 navg1.start();
-
                 totalTime += searchTimeData[index];
-                searchRemainingTime = searchRemainingTime - searchTimeData[index];
+                // searchRemainingTime = searchRemainingTime - searchTimeData[index];
                 remainingTime = deadline - totalTime;
                 $("input[id='remainingTime']").val(remainingTime.toString());
                 // $.toaster('路径扩张完成!', 'Success', 'success');
@@ -373,32 +428,32 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             };
 
             if (navg1.getNaviStatus().toString() === 'pause' && navg1.isCursorAtPathEnd()) {
-                if (index + 1 <= searchPathData.length - 1 && !searchTrafficDataFlag[index + 1]) {
+                if (index + 1 <= searchPathData.length - 1 && remainingTime > 0) {
                     expandPathFlag = doExpand();
                 }
                 /*
                 //TODO 总结：回调函数导致的函数顺序执行结构混乱，用双setTimeout保持三者顺序执行
                  */
-                else if (index + 1 <= searchPathData.length - 1 && searchTrafficDataFlag[index + 1]) {
-                    $.toaster('前方路段堵车!', 'Warning', 'warning');
-                    console.log("前方路段堵车！");
+                else if (index + 1 <= searchPathData.length - 1 && remainingTime <= 0) {
+                    $.toaster('时间不充足,需要重新规划路径!', 'Warning', 'warning');
+                    console.log("时间不充足,需要重新规划路径！");
                     $interval.cancel(gpTimer);
                     reSearchOrigin = new AMap.LngLat(navg1.getPosition().getLng(), navg1.getPosition().getLat());
                     $http.get(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.pid + "/W_Info")
                         .success(function (data) {
-                            console.log("data:",data);
+                            console.log("data:", data);
                             data.value.x_Coor = reSearchOrigin.getLng();
                             data.value.y_Coor = reSearchOrigin.getLat();
                             console.log("当前点坐标:" + data.value.x_Coor + ',' + data.value.y_Coor);
-                            console.log("NavigationEvent:",NavigationEvent);
+                            console.log("NavigationEvent:", NavigationEvent);
                             $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.pid + "/W_Info/complete", data)
                                 .success(function (data) {
-                                    $http.post(activityBasepath+"/zbq/tasks/Running")
+                                    $http.post(activityBasepath + "/zbq/tasks/Running")
                                         .success(function (data) {
-                                            NavigationEvent=null;
+                                            NavigationEvent = null;
                                             expandPathFlag = false;
-                                            $.toaster('堵车情况汇报完毕!', 'Success', 'success');
-                                            console.log("堵车，结束running");
+                                            $.toaster('重新规划路径完毕', 'Success', 'success');
+                                            console.log("重新规划路径完毕");
                                         });
                                 });
                         });
@@ -412,7 +467,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
 
         var getPosition = function () {
             var position = navg1.getPosition();
-            console.log("NavigationEvent:",NavigationEvent);
+            console.log("NavigationEvent:", NavigationEvent);
             $http.get(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.pid + "/W_Info")
                 .success(function (data) {
                     data.value.x_Coor = position.getLng();

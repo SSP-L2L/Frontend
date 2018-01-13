@@ -26,11 +26,20 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="myModalLabel">
-                    模态框（Modal）标题
+                    选择货物
                 </h4>
             </div>
             <div class="modal-body">
-                在这里添加一些文本
+                <table class="table">
+                    <tr>
+                        <td><span class="input-group-addon">货物名:</span></td>
+                        <td><input id="sp_name" class="form-control" ng-model="sp_name"/></td>
+                    </tr>
+                    <tr>
+                        <td><span class="input-group-addon">重量:</span></td>
+                        <td><input id="sp_weight" class="form-control" ng-model="sp_weight"/></td>
+                    </tr>
+                </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭
@@ -50,7 +59,7 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="startVesselModalLabel">
-                    模态框（Modal）标题
+                    选择轮班
                 </h4>
             </div>
             <div class="modal-body">
