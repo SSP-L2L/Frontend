@@ -9,7 +9,7 @@ angular.module('myApp.view1', ['ngRoute'])
         });
     }])
 
-    .controller('View1Ctrl', function ($http, $scope, MapService,MapFactory,VesselProcessService, $interval, Session) {
+    .controller('View1Ctrl', function ($http, $scope, MapService, MapFactory, VesselProcessService, $interval, Session, $filter) {
         $scope.V_id = "413362260";  //船的id
         $scope.sailor = 'admin';    //操作员
         $scope.wInst = undefined;   //
@@ -30,7 +30,6 @@ angular.module('myApp.view1', ['ngRoute'])
         if (Session.getEventId() === null) {
             Session.createEventId();
         }
-        MapFactory.GetRandomNum(0,100);
         MapService.initMap();
         // 入口 ：
         // 侦听流程实例，获取启动vessel-process Instances 的船号等信息
@@ -180,26 +179,26 @@ angular.module('myApp.view1', ['ngRoute'])
             // console.log("glp $scope.pvars: ", $scope.pvars);
             $scope.pIdxs = VesselProcessService.FindVarIdxByName($scope.pvars);
             // console.log("pIdxs" + pIdxs);
-            $scope.pvars[$scope.pIdxs['V_TargLoc']]['value'] = {
-                'lname': $scope.ports[$scope.ports.length - 1][0],
-                'x_coor': $scope.ports[$scope.ports.length - 1][1],
-                'y_coor': $scope.ports[$scope.ports.length - 1][2],
-                'realTime': $scope.ports[$scope.ports.length - 1][3]
-            };
+            // $scope.pvars[$scope.pIdxs['V_TargLoc']]['value'] = {
+            //     'lname': $scope.ports[$scope.ports.length - 1][0],
+            //     'x_coor': $scope.ports[$scope.ports.length - 1][1],
+            //     'y_coor': $scope.ports[$scope.ports.length - 1][2],
+            //     'realTime': $scope.ports[$scope.ports.length - 1][3]
+            // };
             //设置每段的起始港口
-            $scope.pvars[$scope.pIdxs['PrePort']]['value'] = {
-                'lname': '起点',
-                'x_coor': $scope.vdata[0][1],
-                'y_coor': $scope.vdata[0][2],
-                'realTime': $scope.vdata[0][3]
-            };
+            // $scope.pvars[$scope.pIdxs['PrePort']]['value'] = {
+            //     'lname': '起点',
+            //     'x_coor': $scope.vdata[0][1],
+            //     'y_coor': $scope.vdata[0][2],
+            //     'realTime': $scope.vdata[0][3]
+            // };
             // 设置初始NextPort
-            $scope.pvars[$scope.pIdxs['NextPort']]['value'] = {
-                'lname': $scope.ports[$scope.portIdx][0],
-                'x_coor': $scope.ports[$scope.portIdx][1],
-                'y_coor': $scope.ports[$scope.portIdx][2],
-                'realTime': $scope.ports[$scope.portIdx][3]
-            };
+            // $scope.pvars[$scope.pIdxs['NextPort']]['value'] = {
+            //     'lname': $scope.ports[$scope.portIdx][0],
+            //     'x_coor': $scope.ports[$scope.portIdx][1],
+            //     'y_coor': $scope.ports[$scope.portIdx][2],
+            //     'realTime': $scope.ports[$scope.portIdx][3]
+            // };
             // 设置初始NowLoc
             $scope.pvars[$scope.pIdxs['NowLoc']]['value'] = {
                 'lname': "未知",
@@ -208,6 +207,26 @@ angular.module('myApp.view1', ['ngRoute'])
                 'timeStamp': 0,
                 'velocity': $scope.vdata[0][4]
             };
+            //初始化TargLocList
+            for(var i in  $scope.ports){
+                // console.log($scope.pvars[$scope.pIdxs['StartTime']].value);
+                var ms = Date.parse($scope.pvars[$scope.pIdxs['StartTime']].value) + Date.parse($scope.ports[i][3]) - Date.parse($scope.vdata[0][3]);
+                //加上默认等待时间
+                ms += i*12*60*60*1000;
+                var d = new Date();
+                d.setTime(ms);
+                var e_date = '';
+                var s_date = '';
+                if (d != 'Invalid Date') {
+                    s_date = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
+                    d.setTime(ms+12*60*60*1000);
+                    e_date = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
+                }
+                $scope.pvars[$scope.pIdxs['TargLocList']].value[i].estart=s_date;
+                $scope.pvars[$scope.pIdxs['TargLocList']].value[i].eend=e_date;
+                // console.log("TargLocList:",$scope.pvars[$scope.pIdxs['TargLocList']]);
+
+            }
 
             // 开始航行 , 间歇式传送数据到流程引擎
             $scope.delay = 0;
@@ -215,14 +234,15 @@ angular.module('myApp.view1', ['ngRoute'])
             $scope.cnt = 0; // 循环次数
         };
 
+
         $scope.$watch('cnt', function (newCnt) {
             // console.log("new Delay", $scope.delay);
             // console.log("oldDelay",oldDelay);
             if ($scope.cnt !== -1) {
-                console.log("diyici : ", $scope.delay);
+                // console.log("diyici : ", $scope.delay);
                 $scope.vti = $interval(function () {
                     $scope.vState = $scope.pvars[$scope.pIdxs['State']]['value'];
-                    console.log("$scope.vState:", $scope.vState);
+                    // console.log("$scope.vState:", $scope.vState);
                     if ($scope.vState == 'voyaging') {// 进入voyaging 就开始PUT
                         // ，初始时流程启动，就开始PUT
                         // 上传流程变量
@@ -274,14 +294,14 @@ angular.module('myApp.view1', ['ngRoute'])
                             //PUT Variable to Process Engine Or Global cache
                             if ($scope.vState == 'arrival') {
                                 //TODO : 修改StartTime
-                                var ms = Date.parse($scope.pvars[$scope.pidxs['StartTime']].value) + $scope.pvars[$scope.pidxs['NowLoc']].value.timeStamp;
+                                var ms = Date.parse($scope.pvars[$scope.pIdxs['StartTime']].value) + $scope.pvars[$scope.pIdxs['NowLoc']].value.timeStamp;
                                 var d = new Date();
                                 d.setTime(ms);
                                 if (d != 'Invalid Date') {
-                                    scope.pvars[$scope.pidxs['StartTime']].value = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
+                                    scope.pvars[$scope.pIdxs['StartTime']].value = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
                                 }
                                 //TODO：设置到港,完成任务
-                                var varUrl = activityBasepath + '/zbq/variables' + pid + '/complete';
+                                var varUrl = activityBasepath + '/zbq/variables/' + $scope.pid + '/complete';
                                 $http.put(varUrl, $scope.pvars)
                                     .success(function (res) {
                                         console.log("Voyaging Task 结束，将startTime上传");
@@ -297,9 +317,9 @@ angular.module('myApp.view1', ['ngRoute'])
                                     // $.toaster('$scope.cnt : '+$scope.cnt,'Vessel','info');
                                     // console.log("PUT once more");
                                     // console.log('$scope.cnt : '+$scope.cnt);
-                                    console.log("cnt", $scope.cnt);
+                                    // console.log("cnt", $scope.cnt);
                                     var tCnt = $scope.cnt + 1;
-                                    console.log("Lng:", [$scope.vdata[$scope.cnt][1], $scope.vdata[$scope.cnt][2]]);
+                                    // console.log("Lng:", [$scope.vdata[$scope.cnt][1], $scope.vdata[$scope.cnt][2]]);
                                     $scope.delay = (Date.parse($scope.vdata[tCnt][3]) - Date.parse($scope.vdata[tCnt - 1][3])) / $scope.ZoomInVal;
                                     //if($scope.vState == 'voyaging'){
                                     $scope.cnt++;
@@ -360,7 +380,8 @@ angular.module('myApp.view1', ['ngRoute'])
                 .success(function (data) {
                     $scope.pvars = data;
                     $scope.pIdxs = VesselProcessService.FindVarIdxByName($scope.pvars);
-                    var ms = Date.parse($scope.pvars[$scope.pidxs['StartTime']].value) + $scope.pvars[$scope.pidxs['NowLoc']].value.timeStamp;
+                    var ms = Date.parse($scope.pvars[$scope.pIdxs['StartTime']].value) + $scope.pvars[$scope.pIdxs['NowLoc']].value.timeStamp;
+
                     var d = new Date();
                     d.setTime(ms);
                     if (d != 'Invalid Date') {
@@ -374,35 +395,49 @@ angular.module('myApp.view1', ['ngRoute'])
                     };
                     var var_sp_name = {
                         'name': 'sp_name',
-                        'type': 'String',
+                        'type': 'string',
                         'scope': 'local',
                         'value': $scope.sp_name
                     };
 
                     $scope.pvars.push(var_apply_time, var_sp_name);
-                    var varUrl = activityBasepath + '/zbq/variables' + $scope.pid + '/complete';
+                    var varUrl = activityBasepath + '/zbq/variables/' + $scope.pid + '/complete';
                     $http.put(varUrl, $scope.pvars)
                         .success(function (data) {
                             console.log("Voyaging Task 结束，将startTime上传");
                             $scope.pvars = data;
                             $scope.pIdxs = VesselProcessService.FindVarIdxByName($scope.pvars);
+                            var start_apply = new Date();
                             var data2VMC = {
+                                'msgType' : "Msg_StartMana",
                                 'Apply_Id': MapFactory.newGuid,
                                 'V_pid': $scope.pid,
                                 'V_id': $scope.V_id,
-                                'V_name':'',
                                 'V_ApplyTime':var_apply_time.value,
-                                'V_VoyagingTime':'',
-                                'V_TargetLocationList':$scope.pvars[$scope.pIdxs['TargLocList']]['value'],
+                                'V_ApplyTime_2':start_apply,
+                                'V_TargLocList':$scope.pvars[$scope.pIdxs['TargLocList']]['value'],
                                 'SparePartName':var_sp_name.value
-                            }
-                            $http.post(activityBasepath + "/coord/message/Msg_StartVMC", data2VMC)
+                            };
+                            $http.post(activityBasepath + "/coord/messages/Msg_StartVMC", data2VMC)
                                 .success(function (data) {
                                     console.log("Send Message to VMC!", data);
                                 })
                         });
                 });
         };
+
+        // $http.get(activityBasepath + '/runtime/process-instances/657608/variables')
+        //     .success(function (data) {
+        //         var varUrl = activityBasepath + '/zbq/variables/' + 657608 + '/complete';
+        //         console.log("data:",data);
+        //         $http.put(varUrl, data)
+        //             .success(function (data) {
+        //                 console.log("执行完毕！",data);
+        //             })
+        //
+        //
+        //     })
+
     });
 
 

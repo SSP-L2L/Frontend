@@ -35,16 +35,16 @@
                         <td><span class="input-group-addon">货物名:</span></td>
                         <td><input id="sp_name" class="form-control" ng-model="sp_name"/></td>
                     </tr>
-                    <tr>
-                        <td><span class="input-group-addon">重量:</span></td>
-                        <td><input id="sp_weight" class="form-control" ng-model="sp_weight"/></td>
-                    </tr>
+                    <!--<tr>-->
+                        <!--<td><span class="input-group-addon">重量:</span></td>-->
+                        <!--<td><input id="sp_weight" class="form-control" ng-model="sp_weight"/></td>-->
+                    <!--</tr>-->
                 </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭
                 </button>
-                <button type="button" class="btn btn-primary">
+                <button type="button" class="btn btn-primary" ng-click="apply()">
                     提交更改
                 </button>
             </div>
@@ -127,7 +127,7 @@
                         <input type="text" class="form-control" id="reSearchDestination" readonly="readonly">
                     </div>
                     <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-default" ng-click="doSearch()">搜索</button>
+                        <button type="button" class="btn btn-default" ng-click="checkSearch()">搜索</button>
                         <button type="button" class="btn btn-default" ng-click="doNavigation()">导航</button>
                     </div>
                 </div>
