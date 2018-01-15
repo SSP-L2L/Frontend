@@ -2,21 +2,10 @@
 App.factory('MapFactory', function ($http) {
     // noinspection JSAnnotator
     return {
-        // GetRandomNum: function (Min, Max) {
-        //     var Range = Max - Min;
-        //     var Rand1 = Math.random();
-        //     var Rand2 = Math.random();
-        //     if (Rand1 === Rand2) {
-        //         return this.GetRandomNum(Min, Max);
-        //     } else {
-        //         console.log([(Min + Math.round(Rand1 * Range)), (Min + Math.round(Rand2 * Range))]);
-        //         return [(Min + Math.round(Rand1 * Range)), (Min + Math.round(Rand2 * Range))];
-        //     }
-        // },
-        setTraffic: function (pathSimplifierIns, searchTimeData , searchSpeedData, index) {
-            var min = 0;
-            var max = 10;
-            var rand = Min + Math.round(Math.random() * (max - min));
+        setTraffic: function (pathSimplifierIns, searchTimeData, searchSpeedData, index) {
+            var Min = 0;
+            var Max = 10;
+            var rand = Min + Math.round(Math.random() * (Max - Min));
             if (rand <= 6) {
                 pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
             } else if (rand <= 8) {
@@ -64,18 +53,18 @@ var pathSimplifierIns = null;  //导航实例
 var map = null;  //地图实例
 var navg1 = null;  //巡航器实例
 
-var searchPathData = [];
-var searchDistanceData = [];
-var searchTimeData = [];
-var searchSpeedData = [];
-var searchTrafficData = [];
-var searchTrafficDataFlag = [];
+var searchPathData = [];  //本次路径规划路段经纬度集合
+var searchDistanceData = [];    //本次路径规划路段距离集合，单位：米
+var searchTimeData = [];    //本次路径规划路段经时间集合，单位：秒
+var searchSpeedData = [];   //本次路径规划路段经速冻集合，单位：m/s（其中需要考虑换算因子）
+// var searchTrafficData = [];
+// var searchTrafficDataFlag = [];
 var TrafficNumber = [];
 
-var trueEstimatedTime = 0; //真实花费总时间
-var estimatedTime = 0;  //预期时间
-var estimatedDistance = 0;  //预期距离
-var originTime = 0;   //车的起始时间
+// var trueEstimatedTime = 0; //真实花费总时间
+var estimatedTime = 0;  //本次路径规划的预计总时间，单位：秒
+var estimatedDistance = 0;  //本次路径规划的预计总时间，单位：米
+var originTime = 0;   //
 var totalTime = 0; //已花费时间
 var deadline = 0;  //时限
 var checkTime = 0;  //检测路径时间
@@ -119,18 +108,18 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             //是否监控地图容器尺寸变化，默认值为false
             resizeEnable: true,
             //地图显示的缩放级别
-            zoom: 7,
+            zoom: 5,
             center: ["114.52105", "30.6827"],
             //地图是否可通过键盘控制,默认为true
             keywordEnable: true
         });
         port32 = new AMap.Icon({
             image: "/images/port32.png",
-            size: new AMap.Size(64, 64)
+            size: new AMap.Size(32, 32)
         });
         uselessPort32 = new AMap.Icon({
             image: "/images/useless-port32.png",
-            size: new AMap.Size(64, 64)
+            size: new AMap.Size(32, 32)
         });
         supplier64 = new AMap.Icon({
             image: "/images/supplier64.png",
@@ -324,7 +313,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                                 });
                         }
                     },
-                timeout: 3000
+                timeout: 5000
             }
         });
         $.toaster('初始化成功！', 'Info', 'success');
@@ -371,23 +360,24 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
     };
 
 
-    this.checkSearch = function (SearchOrigin, SearchDestination, line) {
-        $.toaster('查询路径启动!', 'Info', 'info');
-        // deadline = MapFactory.setDeadline(line);
-        checkTime = 0;
-        check.search(SearchOrigin, SearchDestination, function (status, result) {
-            checkTime = result.routes[0].time;
-            checkDistance = result.routes[0].distance;
-        });
-    };
+    // this.checkSearch = function (SearchOrigin, SearchDestination, line) {
+    //     $.toaster('查询路径启动!', 'Info', 'info');
+    //     // deadline = MapFactory.setDeadline(line);
+    //     checkTime = 0;
+    //     check.search(SearchOrigin, SearchDestination, function (status, result) {
+    //         checkTime = result.routes[0].time;
+    //         checkDistance = result.routes[0].distance;
+    //     });
+    // };
 
 
     this.doSearch = function (SearchOrigin, SearchDestination, line) {
         $.toaster('路径规划启动!', 'Info', 'info');
-        deadline =line;
+        deadline = line;
         driving.clear();
         driving.search(SearchOrigin, SearchDestination, function (status, result) {
             console.log("search开始");
+            var date1=new Date();
             searchOrigin = new AMap.LngLat(result.origin.getLng(), result.origin.getLat());
             searchDestination = new AMap.LngLat(result.destination.getLng(), result.destination.getLat());
 
@@ -413,7 +403,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     //     searchSpeedData.push(result.routes[i].steps[j].distance / result.routes[i].steps[j].time * $scope.ZoomInVal / 4);
                     // } else {
                     searchTimeData.push(result.routes[i].steps[j].time);
-                    searchSpeedData.push(result.routes[i].steps[j].distance / result.routes[i].steps[j].time * $scope.ZoomInVal);
+                    searchSpeedData.push(result.routes[i].steps[j].distance / result.routes[i].steps[j].time * 1000);
                     // }
                     // searchTrafficData.push(result.routes[i].steps[j].tmcs.slice(0));
                 }
@@ -441,16 +431,15 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             // }
             // searchRemainingTime = estimatedTime;
             $("input[id='this.estimatedTime']").val(estimatedTime.toString());
-            // NavigationFlag = true;
+            NavigationFlag = true;
             $.toaster('路径规划完成!', 'Success', 'success');
-            console.log("search结束");
         });
     };
 
 
     this.doNavigation = function (event) {
         index = 0;
-        // NavigationFlag = false;
+        NavigationFlag = false;
         NavigationEvent = event;
         $.toaster('车辆导航开始!', 'Info', 'info');
         pathSimplifierIns.clearPathNavigators();
@@ -501,7 +490,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     //             .success(function (data) {
                     //                 console.log("到达目的地，结束running");
                     //             });
-                    //
                     //     });
                     $http.get(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.pid + "/W_Info")
                         .success(function (data) {
@@ -520,14 +508,16 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                         });
                     return false;
                 }
-                if (TrafficNumber[0] === index) {
-                    pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'yellow';
-                } else if (TrafficNumber[1] === index) {
-                    pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'red';
-                }
-                else {
-                    pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
-                }
+                // if (TrafficNumber[0] === index) {
+                //     pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'yellow';
+                // } else if (TrafficNumber[1] === index) {
+                //     pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'red';
+                // }
+                // else {
+                //     pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
+                // }
+                MapFactory.setTraffic(pathSimplifierIns, searchTimeData, searchSpeedData, index);
+
                 NavigationData[0].path = searchPathData[index].slice(0);
                 pathSimplifierIns.setData(NavigationData);
                 navg1 = pathSimplifierIns.createPathNavigator(0, {
