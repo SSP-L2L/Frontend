@@ -155,11 +155,7 @@ angular.module('myApp.view1', ['ngRoute'])
 
 
         $scope.voyaging = function (pid, nowVid, vars) {
-            // console.log('vars:', vars);
-
-            //vVariables = vars;
             // 定位模块
-
             $scope.vdata = vids[nowVid]; // 船的数据
             $scope.len = $scope.vdata.length;
             $scope.ports = port[nowVid];// 港口数据
@@ -167,7 +163,6 @@ angular.module('myApp.view1', ['ngRoute'])
             $scope.pvars = vars;
             $scope.pid = pid;
 
-            // console.log($scope.vdata[1][1]);
             $scope.marker = new AMap.Marker({ // 加点
                 map: map,
                 position: [$scope.vdata[0][1], $scope.vdata[0][2]]
@@ -253,7 +248,7 @@ angular.module('myApp.view1', ['ngRoute'])
                         // ，初始时流程启动，就开始PUT
                         // 上传流程变量
                         // 判断是否到达next_port;
-                        if ($scope.vdata[$scope.cnt][1] == $scope.ports[$scope.portIdx][1] && $scope.vdata[$scope.cnt][2] == $scope.ports[$scope.portIdx][2]) {
+                        if ($scope.vdata[$scope.cnt][1] === $scope.ports[$scope.portIdx][1] && $scope.vdata[$scope.cnt][2] === $scope.ports[$scope.portIdx][2]) {
                             $.toaster('<---------到达港口--------->', 'Vessel', 'success');
                             console.log("<---------到达港口--------->");
                             if ($scope.portIdx < $scope.ports.length) {
@@ -289,12 +284,12 @@ angular.module('myApp.view1', ['ngRoute'])
                             });
 
                             //PUT Variable to Process Engine Or Global cache
-                            if ($scope.vState == 'arrival') {
+                            if ($scope.vState === 'arrival') {
                                 //TODO : 修改StartTime
                                 var ms = Date.parse($scope.pvars[$scope.pIdxs['StartTime']].value) + $scope.pvars[$scope.pIdxs['NowLoc']].value.timeStamp;
                                 var d = new Date();
                                 d.setTime(ms);
-                                if (d != 'Invalid Date') {
+                                if (d !== 'Invalid Date') {
                                     scope.pvars[$scope.pIdxs['StartTime']].value = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
                                 }
                                 //TODO：设置到港,完成任务
