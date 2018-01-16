@@ -290,7 +290,7 @@ angular.module('myApp.view1', ['ngRoute'])
                                 var d = new Date();
                                 d.setTime(ms);
                                 if (d !== 'Invalid Date') {
-                                    scope.pvars[$scope.pIdxs['StartTime']].value = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
+                                    $scope.pvars[$scope.pIdxs['StartTime']].value = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
                                 }
                                 //TODO：设置到港,完成任务
                                 var varUrl = activityBasepath + '/zbq/variables/' + $scope.pid + '/complete';

@@ -35,10 +35,6 @@
                         <td><span class="input-group-addon">货物名:</span></td>
                         <td><input id="sp_name" class="form-control" ng-model="sp_name"/></td>
                     </tr>
-                    <!--<tr>-->
-                        <!--<td><span class="input-group-addon">重量:</span></td>-->
-                        <!--<td><input id="sp_weight" class="form-control" ng-model="sp_weight"/></td>-->
-                    <!--</tr>-->
                 </table>
             </div>
             <div class="modal-footer">
@@ -73,7 +69,6 @@
                         <td><input id="V_id" class="form-control" ng-model="V_id"/></td>
                     </tr>
                 </table>
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭
@@ -95,14 +90,24 @@
             </div>
             <div id="collapseOne" class="panel-collapse collapse">
                 <div class="panel-body">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-addon">Manager:</span>
-                        <input type="text" class="form-control" id="startPointSearch" placeholder="请输入关键字">
-                    </div>
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-addon">Supplier:</span>
-                        <input type="text" class="form-control" id="endPointSearch" placeholder="请输入关键字">
-                    </div>
+                    <table class="table">
+                        <tr>
+                            <td><span class="input-group-addon">Manager:</span></td>
+                            <td><input type="text" class="form-control" id="startPointSearch" placeholder="请输入关键字"></td>
+                        </tr>
+                        <tr>
+                            <td><span class="input-group-addon">Supplier:</span></td>
+                            <td><input type="text" class="form-control" id="endPointSearch" placeholder="请输入关键字"></td>
+                        </tr>
+                    </table>
+                    <!--<div class="input-group input-group-sm">-->
+                        <!--<span class="input-group-addon">Manager:</span>-->
+                        <!--<input type="text" class="form-control" id="startPointSearch" placeholder="请输入关键字">-->
+                    <!--</div>-->
+                    <!--<div class="input-group input-group-sm">-->
+                        <!--<span class="input-group-addon">Supplier:</span>-->
+                        <!--<input type="text" class="form-control" id="endPointSearch" placeholder="请输入关键字">-->
+                    <!--</div>-->
                     <!--<div class="input-group input-group-sm">-->
                         <!--<span class="input-group-addon">期限:</span>-->
                         <!--<input type="text" class="form-control" id="deadline" placeholder="请输入期限时长">-->
