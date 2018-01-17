@@ -103,20 +103,18 @@ angular.module('myApp.view1', ['ngRoute'])
         }, 2000);
         $scope.W_START_Handle = function (event) {
             console.log("W_START_Handle执行");
-            // if (event.data.W_Info.needPlan) {
-                var origin = new AMap.LngLat(event.data.W_Info.x_Coor, event.data.W_Info.y_Coor);
-                var destination = new AMap.LngLat(event.data.W_Info.w_TargLoc.x_coor, event.data.W_Info.w_TargLoc.y_coor);
-                // var deadline = event.data.W_Info.planRes;
-                var deadline = 1000000;
-                MapService.doSearch(origin, destination, deadline);
-                $interval(function () {
-                    console.log("NavigationFlag",NavigationFlag);
-                    if (NavigationFlag) {
-                        MapService.doNavigation(event);
-                    }
-                }, 1000);
-                // MapService.doNavigation(event);
-            // }
+            // var origin = new AMap.LngLat(event.data.W_Info.x_Coor, event.data.W_Info.y_Coor);
+            // var destination = new AMap.LngLat(event.data.DestPort.x_coor, event.data.DestPort.y_coor);
+            // var deadline = event.data.W_Info.planRes;
+            // var deadline = 1000000;
+            // MapService.doSearch(origin, destination, deadline);
+            MapService.doSearch(event);
+            // $interval(function () {
+            //     console.log("NavigationFlag", NavigationFlag);
+            //     if (NavigationFlag) {
+            MapService.doNavigation(event);
+                // }
+            // }, 1000);
         };
         $scope.startVessel = function () {
             var param = {
@@ -167,6 +165,15 @@ angular.module('myApp.view1', ['ngRoute'])
                 map: map,
                 position: [$scope.vdata[0][1], $scope.vdata[0][2]]
             });
+            //TODO:船启动后，才添加港口
+            for (var i = 0; i < port_1.length; i++) {
+                portMarkers.push(new AMap.Marker({
+                    map: map,
+                    icon: port32,
+                    position: new AMap.LngLat(port_1[i][1], port_1[i][2]),
+                    title: port_1[i][0]
+                }));
+            }
             /*
              * 初始化船的一些信息
              */
@@ -204,30 +211,35 @@ angular.module('myApp.view1', ['ngRoute'])
                 'velocity': $scope.vdata[0][4]
             };
             //初始化TargLocList
-            for(var i in  $scope.ports){
+            for (var i in  $scope.ports) {
                 // console.log($scope.pvars[$scope.pIdxs['StartTime']].value);
                 var ms = Date.parse($scope.pvars[$scope.pIdxs['StartTime']].value) + Date.parse($scope.ports[i][3]) - Date.parse($scope.vdata[0][3]);
                 //加上默认等待时间
-                ms += i*1*60*60*1000;
+                ms += i * 5 * 60 * 60 * 1000;
                 var d = new Date();
                 d.setTime(ms);
                 var e_date = '';
                 var s_date = '';
                 if (d != 'Invalid Date') {
                     s_date = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
-                    d.setTime(ms+1*60*60*1000);
+                    d.setTime(ms + 5 * 60 * 60 * 1000);
                     e_date = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
                 }
-                $scope.pvars[$scope.pIdxs['TargLocList']].value[i].estart=s_date;
-                $scope.pvars[$scope.pIdxs['TargLocList']].value[i].eend=e_date;
+                $scope.pvars[$scope.pIdxs['TargLocList']].value[i].estart = s_date;
+                $scope.pvars[$scope.pIdxs['TargLocList']].value[i].eend = e_date;
                 // console.log("TargLocList:",$scope.pvars[$scope.pIdxs['TargLocList']]);
 
             }
-            $scope.pvars[$scope.pIdxs['PrePort']]['value'] = {
+            $.extend(true, $scope.pvars[$scope.pIdxs['PrePort']]['value'], {
                 'pname': '起点',
                 'x_coor': $scope.vdata[0][1],
                 'y_coor': $scope.vdata[0][2]
-            };
+            });
+            // $scope.pvars[$scope.pIdxs['PrePort']]['value'] = {
+            //     'pname': '起点',
+            //     'x_coor': $scope.vdata[0][1],
+            //     'y_coor': $scope.vdata[0][2]
+            // };
             $scope.pvars[$scope.pIdxs['NextPort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[0];
             // 开始航行 , 间歇式传送数据到流程引擎
             $scope.delay = 0;
@@ -253,7 +265,7 @@ angular.module('myApp.view1', ['ngRoute'])
                             console.log("<---------到达港口--------->");
                             if ($scope.portIdx < $scope.ports.length) {
                                 $scope.pvars[$scope.pIdxs['PrePort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[$scope.portIdx];
-                                if($scope.portIdx<$scope.ports.length-1) {
+                                if ($scope.portIdx < $scope.ports.length - 1) {
                                     $scope.pvars[$scope.pIdxs['NextPort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[$scope.portIdx + 1];
                                 }
                             }
@@ -351,15 +363,15 @@ angular.module('myApp.view1', ['ngRoute'])
                             console.log("船处于其他状态，anchoring /docking")
                         } else if ($scope.pvars[$scope.pIdxs['State']]['value'] == 'voyaging') {
                             //更换港口图标
-                            console.log("$scope.vdata[$scope.cnt][0]:",$scope.ports[$scope.portIdx-1][0]);
-                            for(var i=0;i<portMarkers.length;i++){
-                                if(portMarkers[i].getTitle()===$scope.ports[$scope.portIdx-1][0]){
+                            console.log("$scope.vdata[$scope.cnt][0]:", $scope.ports[$scope.portIdx - 1][0]);
+                            for (var i = 0; i < portMarkers.length; i++) {
+                                if (portMarkers[i].getTitle() === $scope.ports[$scope.portIdx - 1][0]) {
                                     console.log('更换港口图标！');
-                                    portMarkers[i]=new AMap.Marker({ // 加点
+                                    portMarkers[i] = new AMap.Marker({ // 加点
                                         map: map,
-                                        position: [$scope.ports[$scope.portIdx-1][1], $scope.ports[$scope.portIdx-1][2]],
-                                        icon:uselessPort32,
-                                        title:$scope.ports[$scope.portIdx-1][0]
+                                        position: [$scope.ports[$scope.portIdx - 1][1], $scope.ports[$scope.portIdx - 1][2]],
+                                        icon: uselessPort32,
+                                        title: $scope.ports[$scope.portIdx - 1][0]
                                     });
                                 }
                             }
@@ -379,7 +391,7 @@ angular.module('myApp.view1', ['ngRoute'])
          * apply spare parts :
          */
         $scope.apply_time = '1970-01-01 00:00:00';
-        $scope.sp_name = '';
+        $scope.sp_name = '123';
         $scope.apply = function () {
             $http.get(activityBasepath + '/zbq/variables/' + $scope.pid)
                 .success(function (data) {
@@ -407,21 +419,21 @@ angular.module('myApp.view1', ['ngRoute'])
 
                     $scope.pvars.push(var_apply_time, var_sp_name);
                     var varUrl = activityBasepath + '/zbq/variables/' + $scope.pid + '/complete';
+                    console.log("apply_pvars:", $scope.pvars);
                     $http.put(varUrl, $scope.pvars)
                         .success(function (data) {
                             console.log("Voyaging Task 结束，将startTime上传");
                             $scope.pvars = data;
                             $scope.pIdxs = VesselProcessService.FindVarIdxByName($scope.pvars);
-                            var start_apply = new Date();
+                            // var start_apply = new Date();
                             var data2VMC = {
-                                'msgType' : "Msg_StartMana",
+                                'msgType': "Msg_StartMana",
                                 'Apply_Id': MapFactory.newGuid,
                                 'V_pid': $scope.pid,
                                 'V_id': $scope.V_id,
-                                'V_ApplyTime':var_apply_time.value,
-                                'V_realApplyTime':start_apply,
-                                'V_TargLocList':$scope.pvars[$scope.pIdxs['TargLocList']]['value'],
-                                'SparePartName':var_sp_name.value
+                                'V_ApplyTime': var_apply_time.value,
+                                'V_TargLocList': $scope.pvars[$scope.pIdxs['TargLocList']]['value'],
+                                'SparePartName': var_sp_name.value
                             };
                             $http.post(activityBasepath + "/coord/messages/Msg_StartVMC", data2VMC)
                                 .success(function (data) {

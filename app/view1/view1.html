@@ -40,7 +40,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="apply()">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="apply()">
                     提交更改
                 </button>
             </div>
@@ -73,7 +73,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="startVessel()">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="startVessel()">
                     提交更改
                 </button>
             </div>
@@ -100,6 +100,18 @@
                             <td><input type="text" class="form-control" id="endPointSearch" placeholder="请输入关键字"></td>
                         </tr>
                     </table>
+                    <div class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            比率因子
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                            <li><a href="#">1:100</a></li>
+                            <li><a href="#">1:1000</a></li>
+                            <li><a href="#">1:10000</a></li>
+                            <li><button type="button" class="btn btn-primary btn-block">供货商</button></li>
+                        </ul>
+                    </div>
                     <!--<div class="input-group input-group-sm">-->
                         <!--<span class="input-group-addon">Manager:</span>-->
                         <!--<input type="text" class="form-control" id="startPointSearch" placeholder="请输入关键字">-->
