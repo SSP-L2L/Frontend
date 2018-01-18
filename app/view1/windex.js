@@ -17,7 +17,7 @@ angular.module('myApp.view1', ['ngRoute'])
         //Voyaging
         $scope.delay = -1;
         $scope.vti = {};
-        $scope.ZoomInVal = 1000; // 1day --> 1min  //比例换算
+        // $scope.ZoomInVal = 500; // 1day --> 1min  //比例换算
         $scope.portIdx = {};
         $scope.cnt = -1;
         $scope.ports = {};
@@ -103,18 +103,7 @@ angular.module('myApp.view1', ['ngRoute'])
         }, 2000);
         $scope.W_START_Handle = function (event) {
             console.log("W_START_Handle执行");
-            // var origin = new AMap.LngLat(event.data.W_Info.x_Coor, event.data.W_Info.y_Coor);
-            // var destination = new AMap.LngLat(event.data.DestPort.x_coor, event.data.DestPort.y_coor);
-            // var deadline = event.data.W_Info.planRes;
-            // var deadline = 1000000;
-            // MapService.doSearch(origin, destination, deadline);
-            MapService.doSearch(event);
-            // $interval(function () {
-            //     console.log("NavigationFlag", NavigationFlag);
-            //     if (NavigationFlag) {
-            MapService.doNavigation(event);
-                // }
-            // }, 1000);
+            MapService.doNavigation(event,ZoomInVal);
         };
         $scope.startVessel = function () {
             var param = {
@@ -215,14 +204,14 @@ angular.module('myApp.view1', ['ngRoute'])
                 // console.log($scope.pvars[$scope.pIdxs['StartTime']].value);
                 var ms = Date.parse($scope.pvars[$scope.pIdxs['StartTime']].value) + Date.parse($scope.ports[i][3]) - Date.parse($scope.vdata[0][3]);
                 //加上默认等待时间
-                ms += i * 5 * 60 * 60 * 1000;
+                ms += i * 12 * 60 * 60 * 1000;
                 var d = new Date();
                 d.setTime(ms);
                 var e_date = '';
                 var s_date = '';
                 if (d != 'Invalid Date') {
                     s_date = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
-                    d.setTime(ms + 5 * 60 * 60 * 1000);
+                    d.setTime(ms + 12 * 60 * 60 * 1000);
                     e_date = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
                 }
                 $scope.pvars[$scope.pIdxs['TargLocList']].value[i].estart = s_date;
@@ -243,26 +232,32 @@ angular.module('myApp.view1', ['ngRoute'])
             $scope.pvars[$scope.pIdxs['NextPort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[0];
             // 开始航行 , 间歇式传送数据到流程引擎
             $scope.delay = 0;
+            console.log("VStart:", new Date());
             //$scope.delay = (Date.parse($scope.vdata[$scope.cnt+1][3]) - Date.parse($scope.vdata[$scope.cnt][3]))/$scope.ZoomInVal;
             $scope.cnt = 0; // 循环次数
         };
 
 
         $scope.$watch('cnt', function (newCnt) {
-            // console.log("new Delay", $scope.delay);
-            // console.log("oldDelay",oldDelay);
+            let dS = 0;
+            let dC = 0;
+            let date1 = 0;
+            let date2=0;
+            let date3=new Date();
+            let date4=0;
             if ($scope.cnt !== -1) {
-                // console.log("diyici : ", $scope.delay);
                 $scope.vti = $interval(function () {
+                    date1 = dS = new Date();
+                    console.log("date1 : ",date1.getTime());
                     $scope.vState = $scope.pvars[$scope.pIdxs['State']]['value'];
                     // console.log("$scope.vState:", $scope.vState);
-                    if ($scope.vState == 'voyaging') {// 进入voyaging 就开始PUT
+                    if ($scope.vState === 'voyaging') {// 进入voyaging 就开始PUT
                         // ，初始时流程启动，就开始PUT
                         // 上传流程变量
                         // 判断是否到达next_port;
                         if ($scope.vdata[$scope.cnt][1] === $scope.ports[$scope.portIdx][1] && $scope.vdata[$scope.cnt][2] === $scope.ports[$scope.portIdx][2]) {
                             $.toaster('<---------到达港口--------->', 'Vessel', 'success');
-                            console.log("<---------到达港口--------->");
+                            console.log("<---------到达港口--------->", new Date());
                             if ($scope.portIdx < $scope.ports.length) {
                                 $scope.pvars[$scope.pIdxs['PrePort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[$scope.portIdx];
                                 if ($scope.portIdx < $scope.ports.length - 1) {
@@ -322,24 +317,33 @@ angular.module('myApp.view1', ['ngRoute'])
                                     // console.log("PUT once more");
                                     // console.log('$scope.cnt : '+$scope.cnt);
                                     // console.log("cnt", $scope.cnt);
-                                    var tCnt = $scope.cnt + 1;
+                                    // var tCnt = $scope.cnt + 1;
                                     // console.log("Lng:", [$scope.vdata[$scope.cnt][1], $scope.vdata[$scope.cnt][2]]);
-                                    $scope.delay = (Date.parse($scope.vdata[tCnt][3]) - Date.parse($scope.vdata[tCnt - 1][3])) / $scope.ZoomInVal;
+                                    // $scope.delay = (Date.parse($scope.vdata[tCnt][3]) - Date.parse($scope.vdata[tCnt - 1][3])) / $scope.ZoomInVal;
                                     //if($scope.vState == 'voyaging'){
-                                    $scope.cnt++;
+                                    dC = new Date();
+                                    console.log("dC.getTime() - dS.getTime()",dC.getTime() - dS.getTime());
+                                    // $scope.delay -= (dC.getTime() - dS.getTime());
+                                    // console.log("delay:", $scope.delay);
+                                    // $scope.cnt++;
+                                    // console.log("delay",$scope.delay);
                                     // }else if($scope.vState == 'arrival'){
 
                                     // }
                                 });
+                                var tCnt = $scope.cnt + 1;
+                                $scope.delay = (Date.parse($scope.vdata[tCnt][3]) - Date.parse($scope.vdata[tCnt - 1][3])) /ZoomInVal;
+                                console.log("delay:", $scope.delay);
+                                $scope.cnt++;
                             }
                         }
-
-
                     }
-
+                    date2 = new Date();
+                    console.log("date2-date1", date2.getTime() - date1.getTime());
                 }, $scope.delay, 1);
-
             }
+            date4 = new Date();
+            console.log("date4-date3", date4.getTime() - date3.getTime());
         });
 
         /**
@@ -347,7 +351,7 @@ angular.module('myApp.view1', ['ngRoute'])
          * @type {{}}
          */
         $scope.$watch('vState', function (newState) {
-            if (newState == 'arrival') {
+            if (newState === 'arrival') {
                 // 如果不是anchoring / docking状态就停止传送，而是侦听是否有新的voyaging状态出现
                 $scope.ADTi = $interval(function () {
                     var promise1 = VesselProcessService.GetProcessVariablesById($scope.pid);
