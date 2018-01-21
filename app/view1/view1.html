@@ -1,20 +1,20 @@
 <div id="mapContainer"></div>
-<nav id="navbar" class="navbar navbar-default navbar-fixed-top ">
+<nav id="navbar" class="navbar navbar-transparent navbar-fixed-top ">
     <div class="container-fluid">
         <a class="navbar-brand pull-left" href="#">
             <img alt="Brand" style="margin-top:-4px;" id="logo" class="img-thumbnai" src="/images/logo.png">
         </a>
-        <button type="button" id="menubtn" class="btn btn-default navbar-btn pull-right " data-toggle="collapse"
-                data-target="#mapConsole">
-            <span class="glyphicon glyphicon-menu-hamburger"></span>
+        <button type="button" id="start" class="btn btn-default navbar-btn pull-left" data-toggle="modal"
+                data-target="#startVesselModal">
+            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
         </button>
-        <button type="button" id='sendGoods' class="btn btn-default navbar-btn pull-right  " data-toggle="modal"
+        <button type="button" id='sendGoods' class="btn btn-default navbar-btn pull-left  " data-toggle="modal"
                 data-target="#sendGoodsModal">
             <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span>
         </button>
-        <button type="button" id="start" class="btn btn-default navbar-btn pull-right" data-toggle="modal"
-                data-target="#startVesselModal">
-            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+        <button type="button" id="menubtn" class="btn btn-default navbar-btn pull-left" data-toggle="collapse"
+                data-target="#mapConsole">
+            <span class="glyphicon glyphicon-menu-hamburger"></span>
         </button>
     </div>
 </nav>
@@ -80,12 +80,12 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
 </div>
-<div id="mapConsole" class="collapse pull-right">
+<div id="mapConsole" class="collapse pull-left">
     <div class="panel-group" id="accordion">
         <div class="panel panel-default">
             <div class="panel-heading">
                 <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
-                        data-target="#collapseOne" data-parent="accordion">供货商
+                        data-target="#collapseOne" data-parent="accordion">控制台
                 </button>
             </div>
             <div id="collapseOne" class="panel-collapse collapse">
@@ -93,59 +93,49 @@
                     <table class="table">
                         <tr>
                             <td><span class="input-group-addon">Manager:</span></td>
-                            <td><input type="text" class="form-control" id="startPointSearch" placeholder="请输入关键字"></td>
+                            <td><input type="text" class="form-control" id="startPointSearch" placeholder="宁波市"></td>
                         </tr>
                         <tr>
                             <td><span class="input-group-addon">Supplier:</span></td>
-                            <td><input type="text" class="form-control" id="endPointSearch" placeholder="请输入关键字"></td>
+                            <td><input type="text" class="form-control" id="endPointSearch" placeholder="广州市"></td>
                         </tr>
                     </table>
-                    <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-default" ng-click="checkSearch()">搜索</button>
-                        <button type="button" class="btn btn-default" ng-click="doNavigation()">导航</button>
-                    </div>
                 </div>
             </div>
         </div>
         <div class="panel panel-default">
             <div class="panel-heading">
                 <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
-                        data-target="#collapseTwo" data-parent="accordion">船运公司
+                        data-target="#collapseTwo" data-parent="accordion">控制台2
                 </button>
             </div>
             <div id="collapseTwo" class="panel-collapse collapse">
                 <div class="panel-body">
-                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson
-                    cred nesciunt sapiente ea proident. Ad vegan excepteur butcher
-                    vice lomo.
+                    Test
                 </div>
             </div>
         </div>
         <div class="panel panel-default">
             <div class="panel-heading">
                 <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
-                        data-target="#collapseThree" data-parent="accordion">货运公司
+                        data-target="#collapseThree" data-parent="accordion">控制台3
                 </button>
             </div>
             <div id="collapseThree" class="panel-collapse collapse">
                 <div class="panel-body">
-                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson
-                    cred nesciunt sapiente ea proident. Ad vegan excepteur butcher
-                    vice lomo.
+                    Test
                 </div>
             </div>
         </div>
         <div class="panel panel-default">
             <div class="panel-heading">
                 <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
-                        data-target="#collapseFour" data-parent="accordion">目标客户
+                        data-target="#collapseFour" data-parent="accordion">控制台4
                 </button>
             </div>
             <div id="collapseFour" class="panel-collapse collapse">
                 <div class="panel-body">
-                    Nihil anim keffiyeh helvetica, craft beer labore wes anderson
-                    cred nesciunt sapiente ea proident. Ad vegan excepteur butcher
-                    vice lomo.
+                    Test
                 </div>
             </div>
         </div>
