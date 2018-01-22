@@ -18,23 +18,23 @@
 3.  Open Project in WebStrom:  
     -   Choose `Open Project`
     -   Choose the `directory path` which you clone the source code
-    .![open](./webstorm_open_project.png)
+    .![open](images/webstorm_open_project.png)
     -   Choose `run npm install` Wait for npm to download dependencies
-    .![npm install](./webstorm_npm install.png)
+    .![npm install](images/webstorm_npm install.png)
 
 4.    Edit Configuration:
     -   Click `Run`
     -   Choose `Edit Configuration`
-    .![edit_configurations](./webstorm_edit_configurations.png)
+    .![edit_configurations](images/webstorm_edit_configurations.png)
     -   Click the `+` in left-up corner
     -   Choose `npm`
-    .![add_npm](./webstorm_add_npm.png)
+    .![add_npm](images/webstorm_add_npm.png)
     -   Configure npm settings
-    .![Alt text](./webstorm_apply.png)
+    .![Alt text](images/webstorm_apply.png)
 5.  Run Angular Application
 Run Angular Application and visit [http://localhost:8000](http://localhost:8000) in the browser
-  .![start](./webstorm_start.png)
-  .![Alt text](./webstorm_map.png)
+  .![start](images/webstorm_start.png)
+  .![Alt text](images/webstorm_map.png)
 
 ## Dependencies
 -   [`Vessel Backend`](https://www.github.com/sonnyhcl/Backend)
