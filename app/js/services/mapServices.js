@@ -8,7 +8,6 @@ App.factory('MapFactory', function ($http) {
             let rand = Min + Math.round(Math.random() * (Max - Min));
             if (rand <= 90) {
             pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
-                // $.toaster('前方路段正常','Wagon','info');
             }
             else if (rand <= 95) {
                 esTime += searchTimeData * 2;
@@ -281,11 +280,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             });
         };
         this.doNavigation = function (event, ZoomInVal) {
-            // let vStartTime = Date.parse(event.data.StartTime);
-            // let dateMS = vStartTime + (new Date().getTime() - vStartTime) * ZoomInVal;
-            // let eStart = Date.parse(event.data.vDestPort.EStart);
             $.toaster('车辆导航开始!,目的地：'+event.data.vDestPort.pname, 'Wagon', 'success');
-
             let eEnd = Date.parse(event.data.vDestPort.EEnd);
             let esTime = Date.parse(event.data.wDestPort.esTime);
             //获取路径
@@ -301,14 +296,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             let searchDistanceData = [];
             let searchTimeData = [];
             let searchSpeedData = [];
-            // let estimatedTime = path.duration;
-            // let estimatedDistance = path.distance;
-
-
-            let searchOrigin = new AMap.LngLat(event.data.W_Info.value.x_Coor, event.data.W_Info.value.y_Coor);
-            // let searchDestination = new AMap.LngLat(event.data.wDestPort.x_coor, event.data.wDestPort.y_coor);
-
-
             for (let i = 0; i < path.steps.length; i++) {
                 tempPathData.push(path.steps[i].polyline);
                 searchDistanceData.push(path.steps[i].distance);
@@ -324,7 +311,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     pathData.push(new AMap.LngLat(temp[0], temp[1]));
                 }
             }
-
             //启动Navigation
             let index = 0;
             let totalTime = 0;
@@ -365,7 +351,6 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             }
             navg1.setSpeed(searchSpeedData[index]);
             totalTime += searchTimeData[index];
-
             //flag是是否做路程扩展的判断标志
             let expandPath = function () {
                 let doExpand = function () {
@@ -376,24 +361,23 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     }]);
                     NavigationData[0].path = searchPathData[index].slice(0);
                     MapFactory.setTraffic(pathSimplifierIns, searchTimeData, searchSpeedData, esTime, index);
-                    // if (esTime > eEnd) {
-                    //     // searchOrigin = new AMap.LngLat(navg1.getPosition().getLng(), navg1.getPosition().getLat());
-                    //     if (gpTimer !== null) {
-                    //         $interval.cancel(gpTimer);
-                    //     }
-                    //     navg1.stop();
-                    //     $.toaster('时间不充足,需要重新规划路径!', 'Warning', 'warning');
-                    //     let data2VWC = {
-                    //         'msgType': "msg_UpdateDest",
-                    //         'V_pid': event.data.V_pid,
-                    //         'W_pid': event.data.W_Info.value.pid
-                    //     };
-                    //     $http.post(activityBasepath + "/coord/messages/Msg_StartVWC", data2VWC)
-                    //         .sucess(function (data) {
-                    //             console.log("执行重新规划");
-                    //         });
-                    //     return false;
-                    // }
+                    if (esTime > eEnd) {
+                        if (gpTimer !== null) {
+                            $interval.cancel(gpTimer);
+                        }
+                        navg1.stop();
+                        $.toaster('时间不充足,需要重新规划路径!', 'Warning', 'warning');
+                        let data2VWC = {
+                            'msgType': "msg_UpdateDest",
+                            'V_pid': event.data.V_pid,
+                            'W_pid': event.data.W_Info.value.pid
+                        };
+                        $http.post(activityBasepath + "/coord/messages/Msg_StartVWC", data2VWC)
+                            .sucess(function (data) {
+                                console.log("执行重新规划");
+                            });
+                        return false;
+                    }
                     pathSimplifierIns.setData(NavigationData);
                     navg1 = pathSimplifierIns.createPathNavigator(0, {
                         loop: false,
@@ -407,8 +391,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 if (navg1.getNaviStatus().toString() === 'pause' && navg1.isCursorAtPathEnd()) {
                     if(index+1>searchPathData.length-1){
                         $interval.cancel(gpTimer);
-                        // console.log("到达目的地！");
-                        $.toaster("到达指定地点,本次任务结束！",'Wagon','success');
+                        $.toaster("车已到达指定地点！",'Wagon','success');
                         expandPathFlag=false;
                     }
                     if (index + 1 <= searchPathData.length - 1 && esTime <= eEnd) {
