@@ -22,7 +22,7 @@ angular.module('myApp.view1', ['ngRoute'])
         $scope.ports = {};
         $scope.pvars = {};
         $scope.pIdxs = {};
-        $scope.marker = {};
+        $scope.marker;
         $scope.vState = {};
         $scope.pid = {};
         $scope.ADTi = {};
@@ -40,7 +40,7 @@ angular.module('myApp.view1', ['ngRoute'])
         };
         let promise = VesselProcessService.GetProcessInstance(params);
         promise.then(function (data) {  // 调用承诺API获取数据 .resolve
-            console.log("promise : success ", data);
+            console.log("promise : success ");
             if (data.size !== 0) {
                 console.log("监听到车流程实例");
                 $scope.wInst = data.data[0];
@@ -51,8 +51,6 @@ angular.module('myApp.view1', ['ngRoute'])
                 promise1.then(function (data) {  // 调用承诺API获取数据 .resolve
                     console.log("promise : success ");
                     $scope.wVariables = data;
-                    console.log("wVariables:" + $scope.wVariables);
-
                 }, function (data) {  // 处理错误 .reject
                     console.error("promise : error");
                 }).finally(function (data) {
@@ -89,7 +87,6 @@ angular.module('myApp.view1', ['ngRoute'])
                                 }
                             }
                             if ('MSC_MeetWeightCond' === event.type) {
-                                console.log("MSC_MeetWeightCond", event.data);
                                 $scope.MSC_MeetWeightCond_Handle(event);
                             }
                         }
@@ -106,7 +103,6 @@ angular.module('myApp.view1', ['ngRoute'])
          * @constructor
          */
         $scope.MSC_MeetWeightCond_Handle = function (event) {
-            console.log("MSC_MeetWeightCond_Handle", event);
             let portsList = event.data.MSC_TargPorts;
             for (let i = 0; i < portsList.length; i++) {
                 if (!portsList[i].isMeetWeightCond) {
@@ -148,7 +144,6 @@ angular.module('myApp.view1', ['ngRoute'])
                             let pid = data.id;
                             VesselProcessService.GetProcessVariablesById(pid)
                                 .then(function (data) {
-                                    // console.log("variables : " , data);
                                     $scope.voyaging(pid, $scope.V_id, data);
                                 });
                         });
@@ -204,7 +199,6 @@ angular.module('myApp.view1', ['ngRoute'])
                 }
                 $scope.pvars[$scope.pIdxs['TargLocList']].value[i].estart = s_date;
                 $scope.pvars[$scope.pIdxs['TargLocList']].value[i].eend = e_date;
-                // console.log("TargLocList:",$scope.pvars[$scope.pIdxs['TargLocList']]);
 
             }
 
@@ -213,7 +207,6 @@ angular.module('myApp.view1', ['ngRoute'])
                 'x_coor': $scope.vdata[0][1],
                 'y_coor': $scope.vdata[0][2],
             });
-            // $scope.pvars[$scope.pIdxs['PrePort']]['value'].pname='起点';
             $scope.pvars[$scope.pIdxs['NextPort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[0];
             // 开始航行 , 间歇式传送数据到流程引擎
             $scope.delay = 0;
@@ -273,7 +266,7 @@ angular.module('myApp.view1', ['ngRoute'])
                                 upVars.push($scope.pvars[$scope.pIdxs['NowLoc']], $scope.pvars[$scope.pIdxs['PrePort']], $scope.pvars[$scope.pIdxs['NextPort']], $scope.pvars[$scope.pIdxs['State']], $scope.pvars[$scope.pIdxs['TargLocList']]);
                                 $http.put(varUrl, $scope.pvars)
                                     .success(function (res) {
-                                        console.log("Voyaging Task 结束，将startTime上传", res);
+                                        console.log("Voyaging Task 结束，将startTime上传");
                                     });
                             } else {
                                 let upVars = [];
@@ -368,7 +361,6 @@ angular.module('myApp.view1', ['ngRoute'])
                             console.log("Voyaging Task 结束，将startTime上传");
                             $scope.pvars = data;
                             $scope.pIdxs = VesselProcessService.FindVarIdxByName($scope.pvars);
-                            // var start_apply = new Date();
                             let data2VMC = {
                                 'msgType': "Msg_StartMana",
                                 'Apply_Id': MapFactory.newGuid,
@@ -380,7 +372,7 @@ angular.module('myApp.view1', ['ngRoute'])
                             };
                             $http.post(activityBasepath + "/coord/messages/Msg_StartVMC", data2VMC)
                                 .success(function (data) {
-                                    console.log("Send Message to VMC!", data);
+                                    console.log("Send Message to VMC!");
                                 });
                         });
                     $.toaster('提出申请，货物名为:' + $scope.sp_name, 'Admin', 'success');

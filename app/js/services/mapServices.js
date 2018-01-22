@@ -7,23 +7,23 @@ App.factory('MapFactory', function ($http) {
             const Max = 100;
             let rand = Min + Math.round(Math.random() * (Max - Min));
             if (rand <= 90) {
-            pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
+                pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
             }
             else if (rand <= 95) {
                 esTime += searchTimeData * 2;
-                searchTimeData[index] *=2;
+                searchTimeData[index] *= 2;
                 searchSpeedData[index] /= 2;
-                console.log("缓行：",searchSpeedData[index]);
+                console.log("缓行：", searchSpeedData[index]);
                 pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'yellow';
-                $.toaster('前方出现缓行情况','Wagon','warning');
+                $.toaster('前方出现缓行情况', 'Wagon', 'warning');
 
             } else {
                 esTime += searchTimeData * 4;
                 searchTimeData[index] *= 4;
                 searchSpeedData[index] /= 4;
-                console.log("拥堵：",searchSpeedData[index]);
+                console.log("拥堵：", searchSpeedData[index]);
                 pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'red';
-                $.toaster('前方出现拥堵情况','Wagon','danger');
+                $.toaster('前方出现拥堵情况', 'Wagon', 'danger');
 
             }
         },
@@ -35,39 +35,40 @@ App.factory('MapFactory', function ($http) {
                 if ((i === 8) || (i === 12) || (i === 16) || (i === 20))
                     guid += "-";
             }
-            console.log("GUID", guid);
             return guid;
         }, setManager: function (title, position) {
-            console.log("setManager:", title, position);
-            new AMap.Marker({
+            let manager = new AMap.Marker({
                 map: map,
                 icon: manager64,
                 position: position,
                 title: title
             });
+            return manager;
         }, setSupplier: function (title, position) {
-            console.log("setSupplier:", title, position);
-            new AMap.Marker({
+            let supplier = new AMap.Marker({
                 map: map,
                 icon: supplier64,
                 position: position,
                 title: title
             });
+            return supplier;
         }
     }
 });
-let pathSimplifierIns = null;  //导航实例
-let pathSimplifierIns4Route = null;
-let map = null;  //地图实例
-let port32 = null;  //使用中的港口，icon类
-let uselessPort32 = null;   //未使用中的港口，icon类
-let supplier64 = null;   //供货商，icon类
-let manager64 = null;    //主管,icon类
+let pathSimplifierIns;  //导航实例
+let pathSimplifierIns4Route;
+let map;  //地图实例
+let port32;  //使用中的港口，icon类
+let uselessPort32;   //未使用中的港口，icon类
+let supplier64;   //供货商，icon类
+let manager64;    //主管,icon类
 let portMarkers = []; //港口点标记集合，Marker类集合
 let vids = {};
 let port = [];
-let target = null;// 目标港口是第一个
-let gpTimer = null;
+let target;// 目标港口是第一个
+let gpTimer;
+let manager;
+let supplier;
 
 App.service('MapService', function (MapFactory, $http, Session, VesselProcessService, $interval) {
 
@@ -131,8 +132,10 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     //adcode区域编码
                     placeSearch_start.setCity(e.poi.adcode);
                     placeSearch_start.search(e.poi.name, function (status, result) {
-                        console.log("Manager!", result.poiList.pois[0].name, result.poiList.pois[0].location);
-                        MapFactory.setManager(result.poiList.pois[0].name, result.poiList.pois[0].location);
+                        if (manager !== undefined) {
+                            manager.hide();
+                        }
+                        manager = MapFactory.setManager(result.poiList.pois[0].name, result.poiList.pois[0].location);
 
                     });
                 });
@@ -151,14 +154,16 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 AMap.event.addListener(autocomplete_end, "select", function (e) {
                     placeSearch_end.setCity(e.poi.adcode);
                     placeSearch_end.search(e.poi.name, function (status, result) {
-                        console.log("Supplier!");
-                        MapFactory.setSupplier(result.poiList.pois[0].name, result.poiList.pois[0].location);
+                        if (supplier !== undefined){
+                            supplier.hide();
+                        }
+                        supplier = MapFactory.setSupplier(result.poiList.pois[0].name, result.poiList.pois[0].location);
 
                     });
                 });
             });
-            MapFactory.setManager('宁波市',[121.5502700000,29.8738600000]);
-            MapFactory.setSupplier('广州市',[113.2643600000,23.1290800000]);
+            // MapFactory.setManager('宁波市', [121.5502700000, 29.8738600000], manager);
+            // MapFactory.setSupplier('广州市', [113.2643600000, 23.1290800000], supplier);
             /*
                 加载路径展示
             */
@@ -275,12 +280,12 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                                 });
                         }
                     },
-                    timeout: 5000
+                    timeout: 10000
                 }
             });
         };
         this.doNavigation = function (event, ZoomInVal) {
-            $.toaster('车辆导航开始!,目的地：'+event.data.vDestPort.pname, 'Wagon', 'success');
+            $.toaster('车辆导航开始!,目的地：' + event.data.vDestPort.pname, 'Wagon', 'success');
             let eEnd = Date.parse(event.data.vDestPort.EEnd);
             let esTime = Date.parse(event.data.wDestPort.esTime);
             //获取路径
@@ -389,10 +394,10 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 };
 
                 if (navg1.getNaviStatus().toString() === 'pause' && navg1.isCursorAtPathEnd()) {
-                    if(index+1>searchPathData.length-1){
+                    if (index + 1 > searchPathData.length - 1) {
                         $interval.cancel(gpTimer);
-                        $.toaster("车已到达指定地点！",'Wagon','success');
-                        expandPathFlag=false;
+                        $.toaster("车已到达指定地点！", 'Wagon', 'success');
+                        expandPathFlag = false;
                     }
                     if (index + 1 <= searchPathData.length - 1 && esTime <= eEnd) {
                         expandPathFlag = doExpand();
