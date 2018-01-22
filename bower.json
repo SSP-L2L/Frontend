@@ -14,6 +14,6 @@
     "angular-local-storage": "^0.7.1",
     "jquery": "^3.2.1",
     "bootstrap": "^3.3.7",
-    "jquery.toaster": "^1.2.0"
+    "jquery.toaster": "https://github.com/elevenLianm/jquery.toaster.git#^1.2.1"
   }
 }

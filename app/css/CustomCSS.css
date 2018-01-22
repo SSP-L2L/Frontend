@@ -9,7 +9,6 @@ body {
 #collapseOne button {
     text-align: center;
     margin: 5px;
-
 }
 
 #mapConsole {
@@ -17,7 +16,12 @@ body {
     position: relative;
     width: 30%;
     height: 100%;
-    border-radius: 10px;
+    border-radius: 4px;
+}
+
+#accordion {
+    width: 100%;
+    height: 100%;
 }
 
 #navbar button {
