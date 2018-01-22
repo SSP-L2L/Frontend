@@ -22,7 +22,7 @@
     -   Choose `run npm install` Wait for npm to download dependencies
     ![npm install](app/images/webstorm_npm install.png)
 
-4.    Edit Configuration:
+4.  Edit Configuration:
     -   Click `Run`
     -   Choose `Edit Configuration`
     ![edit_configurations](app/images/webstorm_edit_configurations.png)
@@ -31,8 +31,8 @@
     ![add_npm](app/images/webstorm_add_npm.png)
     -   Configure npm settings
     ![Alt text](app/images/webstorm_apply.png)
-5.  Run Angular Application
-Run Angular Application and visit [http://localhost:8000](http://localhost:8000) in the browser
+5.  Run Application
+    Run Angular Application and visit [http://localhost:8000](http://localhost:8000) in the browser
     ![start](app/images/webstorm_start.png)
     ![Alt text](app/images/webstorm_map.png)
 
