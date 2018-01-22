@@ -101,11 +101,11 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 size: new AMap.Size(32, 32)
             });
             supplier64 = new AMap.Icon({
-                image: "/images/supplier64.png",
+                image: "/images/supplier32.png",
                 size: new AMap.Size(64, 64)
             });
             manager64 = new AMap.Icon({
-                image: "/images/manager64.png",
+                image: "/images/manager32.png",
                 size: new AMap.Size(64, 64)
             });
             /*

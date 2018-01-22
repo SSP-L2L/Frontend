@@ -78,12 +78,11 @@ angular.module('myApp.view1', ['ngRoute'])
                             if ('W_RUN' === event.type) {
                                 console.log("W_RUN.pid", event.data);
                                 if (event.data.State === 'success') {
-                                    {/*<<<<<<< HEAD*/
-                                    }
-                                    $.toaster(event.data.Reason, 'Wagon', 'info');
+                                    $.toaster(event.data.Reason, 'Vessel', 'info');
                                     $scope.W_START_Handle(event);
                                 } else {
-                                    $.toaster('审批时间过长，无法找到合适港口!', 'Wagon', 'warning')
+                                    pathSimplifierIns.clearPathNavigators();
+                                    $.toaster('审批时间过长，无法找到合适港口!', 'admin', 'warning')
                                 }
                             }
                             if ('MSC_MeetWeightCond' === event.type) {
