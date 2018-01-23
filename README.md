@@ -20,7 +20,7 @@
     -   Choose the `directory path` which you clone the source code
     ![open](app/images/webstorm_open_project.png)
     -   Choose `run npm install` Wait for npm to download dependencies
-    ![npm install](app/images/webstorm_npm install.png)
+    ![npm install](app/images/webstorm_npm_install.png)
 
 4.  Edit Configuration:
     -   Click `Run`
