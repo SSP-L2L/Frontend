@@ -14,6 +14,8 @@ angular.module('myApp.view1', ['ngRoute'])
         $scope.sailor = 'admin';    //操作员
         $scope.wInst = undefined;
         $scope.vVariables = undefined;
+        $scope.dockingTime = 5;
+        $scope.wagonMarker = undefined;
         //Voyaging
         $scope.delay = -1;
         $scope.vti = {};
@@ -22,7 +24,7 @@ angular.module('myApp.view1', ['ngRoute'])
         $scope.ports = {};
         $scope.pvars = {};
         $scope.pIdxs = {};
-        $scope.marker;
+        $scope.marker = {};
         $scope.vState = {};
         $scope.pid = {};
         $scope.ADTi = {};
@@ -77,12 +79,45 @@ angular.module('myApp.view1', ['ngRoute'])
                             let event = data[i];
                             if ('W_RUN' === event.type) {
                                 console.log("W_RUN.pid", event.data);
+                                if ($scope.wagonMarker !== undefined) {
+                                    wagonMarker.hide();
+                                }
                                 if (event.data.State === 'success') {
                                     $.toaster(event.data.Reason, 'Vessel', 'info');
                                     $scope.W_START_Handle(event);
-                                } else {
+                                } else if (event.data.State === 'fail') {
                                     pathSimplifierIns.clearPathNavigators();
-                                    $.toaster('审批时间过长，无法找到合适港口!', 'admin', 'warning')
+                                    pathSimplifierIns4Route.clearPathNavigators();
+                                    if ($scope.wagonMarker !== undefined) {
+                                        wagonMarker.hide();
+                                    }
+                                    $scope.wagonMarker = new AMap.Marker({
+                                        map: map,
+                                        icon: new AMap.Icon({
+                                            image: "/images/wagon64.png",
+                                            size: new AMap.Size(64, 64)
+                                        }),
+                                        position: new AMap.LngLat(event.data.W_Info.x_coor, event.data.W_Info.y_coor),
+                                        title: 'wagon'
+                                    });
+                                    $.toaster('审批时间过长，无法找到合适港口!', 'Admin', 'warning')
+                                } else {
+
+                                    if ($scope.wagonMarker !== undefined) {
+                                        wagonMarker.hide();
+                                    }
+                                    $scope.wagonMarker = new AMap.Marker({
+                                        map: map,
+                                        icon: new AMap.Icon({
+                                            image: "/images/wagon64.png",
+                                            size: new AMap.Size(64, 64)
+                                        }),
+                                        position: navg1.getPosition(),
+                                        title: 'wagon'
+                                    });
+                                    pathSimplifierIns.clearPathNavigators();
+                                    pathSimplifierIns4Route.clearPathNavigators();
+                                    $.toaster("Missing", 'Wagon', 'warning');
                                 }
                             }
                             if ('MSC_MeetWeightCond' === event.type) {
@@ -186,14 +221,14 @@ angular.module('myApp.view1', ['ngRoute'])
             for (let i in  $scope.ports) {
                 let ms = Date.parse($scope.pvars[$scope.pIdxs['StartTime']].value) + Date.parse($scope.ports[i][3]) - Date.parse($scope.vdata[0][3]);
                 //加上默认等待时间
-                ms += i * 5 * 60 * 60 * 1000;
+                ms += i * $scope.dockingTime * 60 * 60 * 1000;
                 let d = new Date();
                 d.setTime(ms);
                 let e_date = '';
                 let s_date = '';
                 if (d !== 'Invalid Date') {
                     s_date = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
-                    d.setTime(ms + 5 * 60 * 60 * 1000);
+                    d.setTime(ms + $scope.dockingTime * 60 * 60 * 1000);
                     e_date = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
                 }
                 $scope.pvars[$scope.pIdxs['TargLocList']].value[i].estart = s_date;
@@ -232,6 +267,7 @@ angular.module('myApp.view1', ['ngRoute'])
                                     $scope.pvars[$scope.pIdxs['NextPort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[$scope.portIdx + 1];
                                 }
                             }
+                            // console.log("$scope.pvars[$scope.pIdxs['PrePort']]",$scope.pvars[$scope.pIdxs['PrePort']]);
                             $scope.portIdx++;
                             // 到了港口，就设置 船进入其他状态
                             $scope.pvars[$scope.pIdxs['State']]['value'] = 'arrival';
@@ -245,7 +281,6 @@ angular.module('myApp.view1', ['ngRoute'])
                             'y_coor': $scope.vdata[$scope.cnt][2],
                             'velocity': $scope.vdata[$scope.cnt][4]
                         });
-                        // console.log("$scope.pvars[$scope.pIdxs['NowLoc']].value",$scope.pvars[$scope.pIdxs['NowLoc']].value);
                         if ($scope.cnt < $scope.len) {
                             $scope.marker.hide();
                             $scope.marker = new AMap.Marker({ // 加点
@@ -328,6 +363,7 @@ angular.module('myApp.view1', ['ngRoute'])
         $scope.apply_time = '1970-01-01 00:00:00';
         $scope.sp_name = '缸盖';
         $scope.apply = function () {
+            console.log("sp_name", $scope.sp_name);
             $http.get(activityBasepath + '/zbq/variables/' + $scope.pid)
                 .success(function (data) {
                     $scope.pvars = data;

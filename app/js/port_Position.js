@@ -14,24 +14,3 @@ var port_1 = [
     ["常州", "120.006065", "31.976147", "2017-12-08 17:44:00"],
     ["江阴", "120.250824", "31.93615", "2017-12-08 19:28:00"]
 ];
-// var poetWeightLimit = [
-//     {'pName': '黄石', 'weightLimit': 470,'isCraneStart':true},
-//     {'pName': '武穴', 'weightLimit': 475,'isCraneStart':true},
-//     {'pName': '九江', 'weightLimit': 480,'isCraneStart':true},
-//     {'pName': '安庆', 'weightLimit': 485,'isCraneStart':true},
-//     {'pName': '池州', 'weightLimit': 490,'isCraneStart':true},
-//     {'pName': '铜陵', 'weightLimit': 495,'isCraneStart':true},
-//     {'pName': '芜湖', 'weightLimit': 500,'isCraneStart':true},
-//     {'pName': '马鞍山', 'weightLimit': 505,'isCraneStart':true},
-//     {'pName': '南京', 'weightLimit': 510,'isCraneStart':true},
-//     {'pName': '仪征', 'weightLimit': 515,'isCraneStart':true},
-//     {'pName': '镇江', 'weightLimit': 520,'isCraneStart':true},
-//     {'pName': '泰州', 'weightLimit': 525,'isCraneStart':true},
-//     {'pName': '常州', 'weightLimit': 530,'isCraneStart':true},
-//     {'pName': '江阴', 'weightLimit': 535,'isCraneStart':true}
-// ];
-// var poetWeightLimit = [
-//     {'pName': '黄石', 'weightLimit': 470},
-//     {'pName': '武穴', 'weightLimit': 475},
-//     {'pName': '九江', 'weightLimit': 480},
-// ];

@@ -2,7 +2,7 @@
 <nav id="navbar" class="navbar navbar-transparent navbar-fixed-top ">
     <div class="container-fluid">
         <a class="navbar-brand pull-left" href="#">
-            <img alt="Brand" style="margin-top:-4px;" id="logo" class="img-thumbnai" src="/images/logo.png">
+            <img alt="Brand" style="margin-top:-4px;" id="logo" class="img-thumbnai" src="images/logo.png">
         </a>
         <button type="button" id="start" class="btn btn-default navbar-btn pull-left" data-toggle="modal"
                 data-target="#startVesselModal">
@@ -30,12 +30,14 @@
                 </h4>
             </div>
             <div class="modal-body">
-                <table class="table">
-                    <tr>
-                        <td><span class="input-group-addon">货物名:</span></td>
-                        <td><input id="sp_name" class="form-control" ng-model="sp_name"/></td>
-                    </tr>
-                </table>
+                <div class="form-group">
+                    <select class="form-control input-sm" ng-model="sp_name">
+                        <option value="缸盖" selected="selected">缸盖</option>
+                        <option value="螺丝">螺丝</option>
+                        <option value="钢筋">钢筋</option>
+                    </select>
+                </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭
@@ -93,11 +95,18 @@
                     <table class="table">
                         <tr>
                             <td><span class="input-group-addon">Manager:</span></td>
-                            <td><input type="text" class="form-control" id="startPointSearch" placeholder="请输入关键字" value="宁波市"></td>
+                            <td><input type="text" class="form-control" id="startPointSearch" placeholder="请输入关键字"
+                                       value="宁波市"></td>
                         </tr>
                         <tr>
                             <td><span class="input-group-addon">Supplier:</span></td>
-                            <td><input type="text" class="form-control" id="endPointSearch" placeholder="请输入关键字" value="广州市"></td>
+                            <td><input type="text" class="form-control" id="endPointSearch" placeholder="请输入关键字"
+                                       value="广州市"></td>
+                        </tr>
+                        <tr>
+                            <td><span class="input-group-addon">船的默认停靠时间:</span></td>
+                            <td><input type="text" class="form-control" id="dockingTime" placeholder=""
+                                       ng-model="dockingTime"></td>
                         </tr>
                     </table>
                 </div>

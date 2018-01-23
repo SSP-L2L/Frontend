@@ -69,6 +69,7 @@ let target;// 目标港口是第一个
 let gpTimer;
 let manager;
 let supplier;
+let navg1
 
 App.service('MapService', function (MapFactory, $http, Session, VesselProcessService, $interval) {
 
@@ -154,16 +155,20 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 AMap.event.addListener(autocomplete_end, "select", function (e) {
                     placeSearch_end.setCity(e.poi.adcode);
                     placeSearch_end.search(e.poi.name, function (status, result) {
-                        if (supplier !== undefined){
+                        if (supplier !== undefined) {
                             supplier.hide();
                         }
                         supplier = MapFactory.setSupplier(result.poiList.pois[0].name, result.poiList.pois[0].location);
-
+                        let supplierData = {
+                            slname: e.poi.name
+                        };
+                        $http.post(activityBasepath + '/supplier/location/' + result.poiList.pois[0].location.getLng() + '/' + result.poiList.pois[0].location.getLat(), supplierData)
+                            .success(function (data) {
+                                console.log("supplier location:", data);
+                            })
                     });
                 });
             });
-            // MapFactory.setManager('宁波市', [121.5502700000, 29.8738600000], manager);
-            // MapFactory.setSupplier('广州市', [113.2643600000, 23.1290800000], supplier);
             /*
                 加载路径展示
             */
@@ -332,7 +337,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             }];
             pathSimplifierIns.setData(NavigationData);
             //对第一条线路（即索引 0）创建一个巡航器
-            let navg1 = pathSimplifierIns.createPathNavigator(0, {
+            navg1 = pathSimplifierIns.createPathNavigator(0, {
                 //循环播放
                 loop: false,
             });
@@ -397,6 +402,16 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     if (index + 1 > searchPathData.length - 1) {
                         $interval.cancel(gpTimer);
                         $.toaster("车已到达指定地点！", 'Wagon', 'success');
+                        var isMeet = {
+                            name : "isMeet",
+                            type: 'boolean',
+                            value: true,
+                            scope: 'local'
+                        };
+                        $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.V_pid + "/isMeet", isMeet)
+                            .success(function (data) {
+                                console.log("车已到达指定地点",data);
+                            });
                         expandPathFlag = false;
                     }
                     if (index + 1 <= searchPathData.length - 1 && esTime <= eEnd) {
