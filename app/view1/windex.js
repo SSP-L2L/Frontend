@@ -28,7 +28,7 @@ angular.module('myApp.view1', ['ngRoute'])
         $scope.vState = {};
         $scope.pid = {};
         $scope.ADTi = {};
-        $scope.isMissing = false;
+        $scope.isMissOrMeet = false;
         if (Session.getEventId() === null) {
             Session.createEventId();
         }
@@ -102,7 +102,7 @@ angular.module('myApp.view1', ['ngRoute'])
                                         title: 'wagon'
                                     });
                                     $.toaster('审批时间过长，无法找到合适港口!', 'Admin', 'warning')
-                                } else {
+                                } else if(event.data.State === 'isMissing'){
 
                                     if ($scope.wagonMarker !== undefined) {
                                         wagonMarker.hide();
@@ -120,10 +120,21 @@ angular.module('myApp.view1', ['ngRoute'])
                                     pathSimplifierIns4Route.clearPathNavigators();
                                     $.toaster("Missing", 'Wagon', 'warning');
                                     //修改vState
-                                    $scope.isMissing = true;
+                                    $scope.isMissOrMeet = true;
                                     $scope.vState = "voyaging";
+                                    $scope.pvars[$scope.pIdxs['State']]['value'] = $scope.vState;
                                     $scope.delay = 0;
                                     $scope.cnt++;
+                                }else if (event.data.State === 'Meeting'){
+                                    $scope.isMissOrMeet = true;
+                                    $scope.vState = 'voyaging';
+                                    $scope.delay = 0;
+                                    $scope.pvars[$scope.pIdxs['State']]['value'] = $scope.vState;
+                                    console.log("meeting state!" , $scope.cnt);
+                                    $scope.cnt++;
+                                    console.log("meeting state!" , $scope.cnt);
+                                }else{
+                                    console.log("other  state!");
                                 }
                             }
                             if ('MSC_MeetWeightCond' === event.type) {
@@ -257,14 +268,21 @@ angular.module('myApp.view1', ['ngRoute'])
         };
 
         $scope.$watch('cnt', function (newCnt) {
+            // console.log("after miss or meet : " , $scope.cnt);
             if ($scope.cnt !== -1) {
                 $scope.vti = $interval(function () {
-                    $scope.vState = $scope.pvars[$scope.pIdxs['State']]['value'];
+                    if($scope.isMissOrMeet === false){
+                        $scope.vState = $scope.pvars[$scope.pIdxs['State']]['value'];
+                    }
+                    // console.log(" $scope.vState " ,  $scope.vState);
                     if ($scope.vState === 'voyaging') {// 进入voyaging 就开始PUT
                         // ，初始时流程启动，就开始PUT
                         // 上传流程变量
                         // 判断是否到达next_port;
-                       if($scope.isMissing === false){
+                        // if($scope.isMissOrMeet === true){
+                            // console.log("Meeting in voya");
+                        // }
+                       if($scope.isMissOrMeet === false){
                            if ($scope.vdata[$scope.cnt][1] === $scope.ports[$scope.portIdx][1] && $scope.vdata[$scope.cnt][2] === $scope.ports[$scope.portIdx][2]) {
                                // $.toaster('<---------到达港口--------->', 'Vessel', 'success');
                                console.log("<---------到达港口--------->", new Date());
