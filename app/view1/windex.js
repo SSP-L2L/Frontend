@@ -28,6 +28,7 @@ angular.module('myApp.view1', ['ngRoute'])
         $scope.vState = {};
         $scope.pid = {};
         $scope.ADTi = {};
+        $scope.isMissing = false;
         if (Session.getEventId() === null) {
             Session.createEventId();
         }
@@ -73,7 +74,7 @@ angular.module('myApp.view1', ['ngRoute'])
                     // console.log(data);
                     if (data.length > 0) {
                         data.sort(function sortNumber(a, b) {
-                            return a.id - b.id
+                            return a.id - b.id;
                         });
                         for (let i = 0; i < data.length; i++) {
                             let event = data[i];
@@ -118,6 +119,11 @@ angular.module('myApp.view1', ['ngRoute'])
                                     pathSimplifierIns.clearPathNavigators();
                                     pathSimplifierIns4Route.clearPathNavigators();
                                     $.toaster("Missing", 'Wagon', 'warning');
+                                    //修改vState
+                                    $scope.isMissing = true;
+                                    $scope.vState = "voyaging";
+                                    $scope.delay = 0;
+                                    $scope.cnt++;
                                 }
                             }
                             if ('MSC_MeetWeightCond' === event.type) {
@@ -258,21 +264,24 @@ angular.module('myApp.view1', ['ngRoute'])
                         // ，初始时流程启动，就开始PUT
                         // 上传流程变量
                         // 判断是否到达next_port;
-                        if ($scope.vdata[$scope.cnt][1] === $scope.ports[$scope.portIdx][1] && $scope.vdata[$scope.cnt][2] === $scope.ports[$scope.portIdx][2]) {
-                            // $.toaster('<---------到达港口--------->', 'Vessel', 'success');
-                            console.log("<---------到达港口--------->", new Date());
-                            if ($scope.portIdx < $scope.ports.length) {
-                                $scope.pvars[$scope.pIdxs['PrePort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[$scope.portIdx];
-                                if ($scope.portIdx < $scope.ports.length - 1) {
-                                    $scope.pvars[$scope.pIdxs['NextPort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[$scope.portIdx + 1];
-                                }
-                            }
-                            $scope.portIdx++;
-                            // 到了港口，就设置 船进入其他状态
-                            $scope.pvars[$scope.pIdxs['State']]['value'] = 'arrival';
-                            $scope.vState = 'arrival';
-                            $.toaster('到达' + $scope.pvars[$scope.pIdxs['PrePort']]['value'].pname + '港口；预计' + $scope.pvars[$scope.pIdxs['PrePort']]['value'].eend + '离港', 'Vessel', 'success');
-                        }
+                       if($scope.isMissing === false){
+                           if ($scope.vdata[$scope.cnt][1] === $scope.ports[$scope.portIdx][1] && $scope.vdata[$scope.cnt][2] === $scope.ports[$scope.portIdx][2]) {
+                               // $.toaster('<---------到达港口--------->', 'Vessel', 'success');
+                               console.log("<---------到达港口--------->", new Date());
+                               if ($scope.portIdx < $scope.ports.length) {
+                                   $scope.pvars[$scope.pIdxs['PrePort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[$scope.portIdx];
+                                   if ($scope.portIdx < $scope.ports.length - 1) {
+                                       $scope.pvars[$scope.pIdxs['NextPort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[$scope.portIdx + 1];
+                                   }
+                               }
+                               $scope.portIdx++;
+                               // 到了港口，就设置 船进入其他状态
+
+                               $scope.pvars[$scope.pIdxs['State']]['value'] = 'arrival';
+                               $scope.vState = 'arrival';
+                               $.toaster('到达' + $scope.pvars[$scope.pIdxs['PrePort']]['value'].pname + '港口；预计' + $scope.pvars[$scope.pIdxs['PrePort']]['value'].eend + '离港', 'Vessel', 'success');
+                           }
+                       }
                         // 修改流程变量---Now_loc
                         $.extend(true, $scope.pvars[$scope.pIdxs['NowLoc']].value, {
                             'lname': null,
