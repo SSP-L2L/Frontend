@@ -267,7 +267,6 @@ angular.module('myApp.view1', ['ngRoute'])
                                     $scope.pvars[$scope.pIdxs['NextPort']]['value'] = $scope.pvars[$scope.pIdxs['TargLocList']].value[$scope.portIdx + 1];
                                 }
                             }
-                            // console.log("$scope.pvars[$scope.pIdxs['PrePort']]",$scope.pvars[$scope.pIdxs['PrePort']]);
                             $scope.portIdx++;
                             // 到了港口，就设置 船进入其他状态
                             $scope.pvars[$scope.pIdxs['State']]['value'] = 'arrival';
