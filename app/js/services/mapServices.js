@@ -2,7 +2,7 @@
 App.factory('MapFactory', function ($http) {
     // noinspection JSAnnotator
     return {
-        setTraffic: function (pathSimplifierIns, searchTimeData, searchSpeedData, esTime, index) {
+        setTraffic: function (pathSimplifierIns, searchTimeData, searchSpeedData,esTime,index) {
             const Min = 0;
             const Max = 100;
             let rand = Min + Math.round(Math.random() * (Max - Min));
@@ -10,22 +10,22 @@ App.factory('MapFactory', function ($http) {
                 pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
             }
             else if (rand <= 95) {
-                esTime += searchTimeData * 2;
-                searchTimeData[index] *= 2;
-                searchSpeedData[index] /= 2;
+                esTime += searchTimeData[index] * 0.5;
+                searchTimeData[index] *= 1.5;
+                searchSpeedData[index] /= 1.5;
                 console.log("缓行：", searchSpeedData[index]);
                 pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'yellow';
                 $.toaster('前方出现缓行情况', 'Wagon', 'warning');
 
             } else {
-                esTime += searchTimeData * 4;
-                searchTimeData[index] *= 4;
-                searchSpeedData[index] /= 4;
+                esTime += searchTimeData[index] * 1;
+                searchTimeData[index] *= 2;
+                searchSpeedData[index] /= 2;
                 console.log("拥堵：", searchSpeedData[index]);
                 pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'red';
                 $.toaster('前方出现拥堵情况', 'Wagon', 'danger');
-
             }
+            return esTime;
         },
         newGuid: function () {
             let guid = "";
@@ -37,21 +37,25 @@ App.factory('MapFactory', function ($http) {
             }
             return guid;
         }, setManager: function (title, position) {
-            let manager = new AMap.Marker({
+            return new AMap.Marker({
                 map: map,
-                icon: manager64,
+                icon: new AMap.Icon({
+                        image: "images/manager32.png",
+                        size: new AMap.Size(64, 64)
+                    }),
                 position: position,
                 title: title
             });
-            return manager;
         }, setSupplier: function (title, position) {
-            let supplier = new AMap.Marker({
+            return new AMap.Marker({
                 map: map,
-                icon: supplier64,
+                icon: new AMap.Icon({
+                    image: "images/supplier32.png",
+                    size: new AMap.Size(64, 64)
+                }),
                 position: position,
                 title: title
             });
-            return supplier;
         }
     }
 });
@@ -60,8 +64,6 @@ let pathSimplifierIns4Route;
 let map;  //地图实例
 let port32;  //使用中的港口，icon类
 let uselessPort32;   //未使用中的港口，icon类
-let supplier64;   //供货商，icon类
-let manager64;    //主管,icon类
 let portMarkers = []; //港口点标记集合，Marker类集合
 let vids = {};
 let port = [];
@@ -69,8 +71,9 @@ let target;// 目标港口是第一个
 let gpTimer;
 let manager;
 let supplier;
-let navg1
-
+let TrafficRed=0;
+let TrafficGreed=0;
+let TrafficYellow=0;
 App.service('MapService', function (MapFactory, $http, Session, VesselProcessService, $interval) {
 
         vids['413362260'] = data_1;// 船号-->位置信息
@@ -94,20 +97,12 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             加载图标
              */
             port32 = new AMap.Icon({
-                image: "/images/port32.png",
+                image: "images/port32.png",
                 size: new AMap.Size(32, 32)
             });
             uselessPort32 = new AMap.Icon({
-                image: "/images/useless-port32.png",
+                image: "images/useless-port32.png",
                 size: new AMap.Size(32, 32)
-            });
-            supplier64 = new AMap.Icon({
-                image: "/images/supplier32.png",
-                size: new AMap.Size(64, 64)
-            });
-            manager64 = new AMap.Icon({
-                image: "/images/manager32.png",
-                size: new AMap.Size(64, 64)
             });
             /*
             加载搜索
@@ -291,13 +286,15 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
         };
         this.doNavigation = function (event, ZoomInVal) {
             $.toaster('车辆导航开始!,目的地：' + event.data.vDestPort.pname, 'Wagon', 'success');
+            pathSimplifierIns.clearPathNavigators();
+            pathSimplifierIns4Route.clearPathNavigators();
+
             let eEnd = Date.parse(event.data.vDestPort.EEnd);
             let esTime = Date.parse(event.data.wDestPort.esTime);
             //获取路径
             if (gpTimer !== null) {
                 $interval.cancel(gpTimer);
             }
-            pathSimplifierIns.clearPathNavigators();
             let route = event.data.pathResult;
             let path = route.paths[0];
             let tempPathData = [];
@@ -323,7 +320,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             }
             //启动Navigation
             let index = 0;
-            let totalTime = 0;
+            // let totalTime = 0;
             let NavigationEvent = event;
             let expandPathFlag = true;
             let NavigationData = {}; //
@@ -337,16 +334,18 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             }];
             pathSimplifierIns.setData(NavigationData);
             //对第一条线路（即索引 0）创建一个巡航器
-            navg1 = pathSimplifierIns.createPathNavigator(0, {
+            let navg1 = pathSimplifierIns.createPathNavigator(0, {
                 //循环播放
                 loop: false,
             });
-            MapFactory.setTraffic(pathSimplifierIns, searchTimeData, searchSpeedData, esTime, index);
+            esTime=MapFactory.setTraffic(pathSimplifierIns, searchTimeData, searchSpeedData, esTime, index);
             if (esTime > eEnd) {
                 if (gpTimer !== null) {
                     $interval.cancel(gpTimer);
                 }
-                navg1.stop();
+                // navg1.stop();
+                pathSimplifierIns.clearPathNavigators();
+                pathSimplifierIns4Route.clearPathNavigators();
                 $.toaster('时间不充足,需要重新规划路径!', 'Wagon', 'warning');
                 let data2VWC = {
                     'msgType': "msg_UpdateDest",
@@ -360,17 +359,12 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 return false;
             }
             navg1.setSpeed(searchSpeedData[index]);
-            totalTime += searchTimeData[index];
+            // totalTime += searchTimeData[index];
             //flag是是否做路程扩展的判断标志
             let expandPath = function () {
                 let doExpand = function () {
                     index++;
-                    pathSimplifierIns4Route.setData([{
-                        name: '总路线',
-                        path: pathData.slice(0)
-                    }]);
-                    NavigationData[0].path = searchPathData[index].slice(0);
-                    MapFactory.setTraffic(pathSimplifierIns, searchTimeData, searchSpeedData, esTime, index);
+                    esTime=MapFactory.setTraffic(pathSimplifierIns, searchTimeData, searchSpeedData, esTime, index);
                     if (esTime > eEnd) {
                         if (gpTimer !== null) {
                             $interval.cancel(gpTimer);
@@ -388,30 +382,37 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                             });
                         return false;
                     }
+                    pathSimplifierIns4Route.setData([{
+                        name: '总路线',
+                        path: pathData.slice(0)
+                    }]);
+                    NavigationData[0].path = searchPathData[index].slice(0);
                     pathSimplifierIns.setData(NavigationData);
                     navg1 = pathSimplifierIns.createPathNavigator(0, {
                         loop: false,
                     });
                     navg1.setSpeed(searchSpeedData[index]);
                     navg1.start();
-                    totalTime += searchTimeData[index];
+                    // totalTime += searchTimeData[index];
                     return true;
                 };
 
                 if (navg1.getNaviStatus().toString() === 'pause' && navg1.isCursorAtPathEnd()) {
                     if (index + 1 > searchPathData.length - 1) {
                         $interval.cancel(gpTimer);
-                        $.toaster("车已到达指定地点！", 'Wagon', 'success');
+                        $.toaster("车已到达指定地点！"+event.data.wDestPort.pname, 'Wagon', 'success');
                         var isMeet = {
                             name : "isMeet",
                             type: 'boolean',
                             value: true,
                             scope: 'local'
                         };
-                        $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.V_pid + "/isMeet", isMeet)
+                        $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.V_pid + "/isMeet/complete", isMeet)
                             .success(function (data) {
                                 console.log("车已到达指定地点",data);
+                                console.log("目标地点:",event.data.wDestPort.pname);
                             });
+
                         expandPathFlag = false;
                     }
                     if (index + 1 <= searchPathData.length - 1 && esTime <= eEnd) {

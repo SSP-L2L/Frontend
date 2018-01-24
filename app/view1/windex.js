@@ -336,7 +336,6 @@ angular.module('myApp.view1', ['ngRoute'])
                             // console.log("$scope.vdata[$scope.cnt][0]:", $scope.ports[$scope.portIdx - 1][0]);
                             for (let i = 0; i < portMarkers.length; i++) {
                                 if (portMarkers[i].getTitle() === $scope.ports[$scope.portIdx - 1][0]) {
-                                    console.log('更换港口图标！');
                                     portMarkers[i] = new AMap.Marker({ // 加点
                                         map: map,
                                         position: [$scope.ports[$scope.portIdx - 1][1], $scope.ports[$scope.portIdx - 1][2]],
@@ -367,9 +366,9 @@ angular.module('myApp.view1', ['ngRoute'])
                 .success(function (data) {
                     $scope.pvars = data;
                     $scope.pIdxs = VesselProcessService.FindVarIdxByName($scope.pvars);
-                    let ms = Date.parse($scope.pvars[$scope.pIdxs['StartTime']].value) + $scope.pvars[$scope.pIdxs['NowLoc']].value.timeStamp;
-
+                    console.log($scope.pvars);
                     let d = new Date();
+                    let ms = (d.getTime()-Date.parse($scope.pvars[$scope.pIdxs['StartTime']].value))*ZoomInVal + Date.parse($scope.pvars[$scope.pIdxs['StartTime']].value);
                     d.setTime(ms);
                     if (d !== 'Invalid Date') {
                         $scope.apply_time = $filter('date')(d, "yyyy-MM-dd HH:mm:ss");
@@ -404,6 +403,7 @@ angular.module('myApp.view1', ['ngRoute'])
                                 'V_TargLocList': $scope.pvars[$scope.pIdxs['TargLocList']]['value'],
                                 'SparePartName': var_sp_name.value
                             };
+                            console.log(" data2VMC : " ,  data2VMC)
                             $http.post(activityBasepath + "/coord/messages/Msg_StartVMC", data2VMC)
                                 .success(function (data) {
                                     console.log("Send Message to VMC!");
