@@ -37,21 +37,23 @@ App.factory('MapFactory', function ($http) {
             }
             return guid;
         }, setManager: function (title, position) {
-            let manager = new AMap.Marker({
+            return new AMap.Marker({
                 map: map,
                 icon: manager64,
                 position: position,
                 title: title
             });
-            return manager;
         }, setSupplier: function (title, position) {
-            let supplier = new AMap.Marker({
+            console.log("supplier",title);
+            return new AMap.Marker({
                 map: map,
-                icon: supplier64,
+                icon: new AMap.Icon({
+                    image: "images/supplier32.png",
+                    size: new AMap.Size(64, 64)
+                }),
                 position: position,
                 title: title
             });
-            return supplier;
         }
     }
 });
@@ -69,7 +71,7 @@ let target;// 目标港口是第一个
 let gpTimer;
 let manager;
 let supplier;
-let navg1
+let navg1;
 
 App.service('MapService', function (MapFactory, $http, Session, VesselProcessService, $interval) {
 
@@ -94,19 +96,19 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             加载图标
              */
             port32 = new AMap.Icon({
-                image: "/images/port32.png",
+                image: "images/port32.png",
                 size: new AMap.Size(32, 32)
             });
             uselessPort32 = new AMap.Icon({
-                image: "/images/useless-port32.png",
+                image: "images/useless-port32.png",
                 size: new AMap.Size(32, 32)
             });
             supplier64 = new AMap.Icon({
-                image: "/images/supplier32.png",
+                image: "images/supplier32.png",
                 size: new AMap.Size(64, 64)
             });
             manager64 = new AMap.Icon({
-                image: "/images/manager32.png",
+                image: "images/manager32.png",
                 size: new AMap.Size(64, 64)
             });
             /*
