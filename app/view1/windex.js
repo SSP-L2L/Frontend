@@ -86,6 +86,9 @@ angular.module('myApp.view1', ['ngRoute'])
                                     $.toaster(event.data.Reason, 'Vessel', 'info');
                                     $scope.W_START_Handle(event);
                                 } else if (event.data.State === 'fail') {
+                                    if (gpTimer !== null) {
+                                        $interval.cancel(gpTimer);
+                                    }
                                     pathSimplifierIns.clearPathNavigators();
                                     pathSimplifierIns4Route.clearPathNavigators();
                                     if ($scope.wagonMarker !== undefined) {
@@ -115,6 +118,9 @@ angular.module('myApp.view1', ['ngRoute'])
                                         position: navg1.getPosition(),
                                         title: 'wagon'
                                     });
+                                    if (gpTimer !== null) {
+                                        $interval.cancel(gpTimer);
+                                    }
                                     pathSimplifierIns.clearPathNavigators();
                                     pathSimplifierIns4Route.clearPathNavigators();
                                     $.toaster("Missing", 'Wagon', 'warning');
