@@ -71,9 +71,7 @@ let target;// 目标港口是第一个
 let gpTimer;
 let manager;
 let supplier;
-let TrafficRed=0;
-let TrafficGreed=0;
-let TrafficYellow=0;
+let navg1Posion;
 App.service('MapService', function (MapFactory, $http, Session, VesselProcessService, $interval) {
 
         vids['413362260'] = data_1;// 船号-->位置信息
@@ -287,7 +285,9 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
         this.doNavigation = function (event, ZoomInVal) {
             $.toaster('车辆导航开始!,目的地：' + event.data.vDestPort.pname, 'Wagon', 'success');
             pathSimplifierIns.clearPathNavigators();
+            pathSimplifierIns.setData();
             pathSimplifierIns4Route.clearPathNavigators();
+            pathSimplifierIns4Route.setData();
 
             let eEnd = Date.parse(event.data.vDestPort.EEnd);
             let esTime = Date.parse(event.data.wDestPort.esTime);
@@ -401,7 +401,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     if (index + 1 > searchPathData.length - 1) {
                         $interval.cancel(gpTimer);
                         $.toaster("车已到达指定地点！"+event.data.wDestPort.pname, 'Wagon', 'success');
-                        var isArriving = {
+                        let isArriving = {
                             name : "isArriving",
                             type: 'boolean',
                             value: true,
@@ -430,6 +430,8 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             };
             let getPosition = function () {
                 let position = navg1.getPosition();
+                navg1Posion=position;
+                // console.log("navi1Posion:",navg1Posion.getLng(),navg1Posion.getLat());
                 $http.get(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.value.pid + "/W_Info")
                     .success(function (data) {
                         data.value.x_Coor = position.getLng();

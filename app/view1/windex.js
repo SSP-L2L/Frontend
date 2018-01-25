@@ -15,7 +15,7 @@ angular.module('myApp.view1', ['ngRoute'])
         $scope.wInst = undefined;
         $scope.vVariables = undefined;
         $scope.dockingTime = 5;
-        $scope.wagonMarker = undefined;
+        $scope.wagonMarker = null;
         //Voyaging
         $scope.delay = -1;
         $scope.vti = {};
@@ -29,6 +29,7 @@ angular.module('myApp.view1', ['ngRoute'])
         $scope.pid = {};
         $scope.ADTi = {};
         $scope.isMissOrMeet = false;
+        $scope.W_pid=0;
         if (Session.getEventId() === null) {
             Session.createEventId();
         }
@@ -80,10 +81,10 @@ angular.module('myApp.view1', ['ngRoute'])
                             let event = data[i];
                             if ('W_RUN' === event.type) {
                                 console.log("W_RUN.pid", event.data);
-                                if ($scope.wagonMarker !== undefined) {
-                                    wagonMarker.hide();
-                                }
                                 if (event.data.State === 'success') {
+                                    if ($scope.wagonMarker !== null) {
+                                        wagonMarker.hide();
+                                    }
                                     $.toaster(event.data.Reason, 'Vessel', 'info');
                                     $scope.W_START_Handle(event);
                                 } else if (event.data.State === 'fail') {
@@ -91,8 +92,10 @@ angular.module('myApp.view1', ['ngRoute'])
                                         $interval.cancel(gpTimer);
                                     }
                                     pathSimplifierIns.clearPathNavigators();
+                                    pathSimplifierIns.setData();
                                     pathSimplifierIns4Route.clearPathNavigators();
-                                    if ($scope.wagonMarker !== undefined) {
+                                    pathSimplifierIns4Route.setData();
+                                    if ($scope.wagonMarker !== null) {
                                         wagonMarker.hide();
                                     }
                                     $scope.wagonMarker = new AMap.Marker({
@@ -101,36 +104,65 @@ angular.module('myApp.view1', ['ngRoute'])
                                             image: "/images/wagon64.png",
                                             size: new AMap.Size(64, 64)
                                         }),
-                                        position: new AMap.LngLat(event.data.W_Info.x_coor, event.data.W_Info.y_coor),
+                                        position: new AMap.LngLat(event.data.W_Info.value.x_Coor, event.data.W_Info.value.y_Coor),
                                         title: 'wagon'
                                     });
+                                    // let isArriving = {
+                                    //     name : "isArriving",
+                                    //     type: 'boolean',
+                                    //     value: true,
+                                    //     scope: 'local'
+                                    // };
+                                    // $http.put(activityBasepath + '/zbq/variables/' + event.data.W_Info.value.pid + "/isArriving/complete", isArriving)
+                                    //     .success(function (data) {
+                                    //         $http.post(activityBasepath + '/zbq/tasks/Running')
+                                    //             .success(function(data){
+                                    //                 console.log("Running 结束！");
+                                    //             })
+                                    //     });
                                     $.toaster('审批时间过长，无法找到合适港口!', 'Admin', 'warning')
                                 } else if(event.data.State === 'isMissing'){
 
-                                    if ($scope.wagonMarker !== undefined) {
+                                    if ($scope.wagonMarker !== null) {
                                         wagonMarker.hide();
                                     }
+                                    console.log("navi1Posion:",navg1Posion.getLng(),navg1Posion.getLat());
                                     $scope.wagonMarker = new AMap.Marker({
                                         map: map,
                                         icon: new AMap.Icon({
                                             image: "/images/wagon64.png",
                                             size: new AMap.Size(64, 64)
                                         }),
-                                        position: navg1.getPosition(),
+                                        position: new AMap.LngLat(navg1Posion.getLng(), navg1Posion.getLat()),
                                         title: 'wagon'
                                     });
                                     if (gpTimer !== null) {
                                         $interval.cancel(gpTimer);
                                     }
                                     pathSimplifierIns.clearPathNavigators();
+                                    pathSimplifierIns.setData();
                                     pathSimplifierIns4Route.clearPathNavigators();
-                                    $.toaster("Missing", 'Wagon', 'warning');
+                                    pathSimplifierIns4Route.setData();
                                     //修改vState
                                     $scope.isMissOrMeet = true;
                                     $scope.vState = "voyaging";
                                     $scope.pvars[$scope.pIdxs['State']]['value'] = $scope.vState;
                                     $scope.delay = 0;
                                     $scope.cnt++;
+                                    $.toaster('无法找到合适港口!', 'Missing', 'warning')
+                                    // let isArriving = {
+                                    //     name : "isArriving",
+                                    //     type: 'boolean',
+                                    //     value: true,
+                                    //     scope: 'local'
+                                    // };
+                                    // $http.put(activityBasepath + '/zbq/variables/' + event.data.W_Info.value.pid + "/isArriving/complete", isArriving)
+                                    //     .success(function (data) {
+                                    //         $http.post(activityBasepath + '/zbq/tasks/Running')
+                                    //             .success(function(data){
+                                    //                 console.log("Running 结束！");
+                                    //             })
+                                    //     });
                                 }else if (event.data.State === 'Meeting'){
                                     $scope.isMissOrMeet = true;
                                     $scope.vState = 'voyaging';
@@ -139,7 +171,9 @@ angular.module('myApp.view1', ['ngRoute'])
                                     console.log("meeting state!" , $scope.cnt);
                                     $scope.cnt++;
                                     console.log("meeting state!" , $scope.cnt);
+                                    $.toaster('车船相遇，完成交货!', 'Admin', 'success')
                                 }else{
+                                    // $.toaster('车船相遇，完成交货!', 'Admin', 'success')
                                     console.log("other  state!");
                                 }
                             }
@@ -280,14 +314,10 @@ angular.module('myApp.view1', ['ngRoute'])
                     if($scope.isMissOrMeet === false){
                         $scope.vState = $scope.pvars[$scope.pIdxs['State']]['value'];
                     }
-                    // console.log(" $scope.vState " ,  $scope.vState);
                     if ($scope.vState === 'voyaging') {// 进入voyaging 就开始PUT
                         // ，初始时流程启动，就开始PUT
                         // 上传流程变量
                         // 判断是否到达next_port;
-                        // if($scope.isMissOrMeet === true){
-                            // console.log("Meeting in voya");
-                        // }
                        if($scope.isMissOrMeet === false){
                            if ($scope.vdata[$scope.cnt][1] === $scope.ports[$scope.portIdx][1] && $scope.vdata[$scope.cnt][2] === $scope.ports[$scope.portIdx][2]) {
                                // $.toaster('<---------到达港口--------->', 'Vessel', 'success');
@@ -436,7 +466,7 @@ angular.module('myApp.view1', ['ngRoute'])
                                 'V_TargLocList': $scope.pvars[$scope.pIdxs['TargLocList']]['value'],
                                 'SparePartName': var_sp_name.value
                             };
-                            console.log(" data2VMC : " ,  data2VMC)
+                            console.log(" data2VMC : " ,  data2VMC);
                             $http.post(activityBasepath + "/coord/messages/Msg_StartVMC", data2VMC)
                                 .success(function (data) {
                                     console.log("Send Message to VMC!");
