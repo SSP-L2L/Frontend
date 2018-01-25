@@ -6,10 +6,10 @@ App.factory('MapFactory', function ($http) {
             const Min = 0;
             const Max = 100;
             let rand = Min + Math.round(Math.random() * (Max - Min));
-            if (rand <= 90) {
+            if (rand <= 50) {
                 pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
             }
-            else if (rand <= 95) {
+            else if (rand <=51) {
                 esTime += searchTimeData[index] * 0.5;
                 searchTimeData[index] *= 1.5;
                 searchSpeedData[index] /= 1.5;
@@ -153,9 +153,12 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                         }
                         supplier = MapFactory.setSupplier(result.poiList.pois[0].name, result.poiList.pois[0].location);
                         let supplierData = {
-                            slname: e.poi.name
+                            slname: e.poi.name,
+                            x_coor:result.poiList.pois[0].location.getLng(),
+                            y_coor:result.poiList.pois[0].location.getLat()
                         };
-                        $http.post(activityBasepath + '/supplier/location/' + result.poiList.pois[0].location.getLng() + '/' + result.poiList.pois[0].location.getLat(), supplierData)
+                        console.log("result:",result.poiList.pois[0].location.getLat());
+                        $http.post(activityBasepath + '/supplier/location/', supplierData)
                             .success(function (data) {
                                 console.log("supplier location:", data);
                             })
