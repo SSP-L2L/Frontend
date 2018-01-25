@@ -401,16 +401,21 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     if (index + 1 > searchPathData.length - 1) {
                         $interval.cancel(gpTimer);
                         $.toaster("车已到达指定地点！"+event.data.wDestPort.pname, 'Wagon', 'success');
-                        var isMeet = {
-                            name : "isMeet",
+                        var isArriving = {
+                            name : "isArriving",
                             type: 'boolean',
                             value: true,
                             scope: 'local'
                         };
-                        $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.V_pid + "/isMeet/complete", isMeet)
+
+                        $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.value.pid + "/isArriving/complete", isArriving)
                             .success(function (data) {
                                 console.log("车已到达指定地点",data);
                                 console.log("目标地点:",event.data.wDestPort.pname);
+                                $http.post(activityBasepath + '/zbq/tasks/Running')
+                                    .success(function(data){
+                                        console.log("Running 结束！");
+                                    })
                             });
 
                         expandPathFlag = false;
