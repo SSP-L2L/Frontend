@@ -83,7 +83,7 @@ angular.module('myApp.view1', ['ngRoute'])
                                 console.log("W_RUN.pid", event.data);
                                 if (event.data.State === 'success') {
                                     if ($scope.wagonMarker !== null) {
-                                        wagonMarker.hide();
+                                        $scope.wagonMarker.hide();
                                     }
                                     $.toaster(event.data.Reason, 'Vessel', 'info');
                                     $scope.W_START_Handle(event);
@@ -96,7 +96,7 @@ angular.module('myApp.view1', ['ngRoute'])
                                     pathSimplifierIns4Route.clearPathNavigators();
                                     pathSimplifierIns4Route.setData();
                                     if ($scope.wagonMarker !== null) {
-                                        wagonMarker.hide();
+                                        $scope.wagonMarker.hide();
                                     }
                                     $scope.wagonMarker = new AMap.Marker({
                                         map: map,
@@ -121,10 +121,9 @@ angular.module('myApp.view1', ['ngRoute'])
                                     //             })
                                     //     });
                                     $.toaster('审批时间过长，无法找到合适港口!', 'Admin', 'warning')
-                                } else if(event.data.State === 'isMissing'){
-
+                                } else if(event.data.State === 'Missing'){
                                     if ($scope.wagonMarker !== null) {
-                                        wagonMarker.hide();
+                                        $scope.wagonMarker.hide();
                                     }
                                     console.log("navi1Posion:",navg1Posion.getLng(),navg1Posion.getLat());
                                     $scope.wagonMarker = new AMap.Marker({
@@ -149,7 +148,7 @@ angular.module('myApp.view1', ['ngRoute'])
                                     $scope.pvars[$scope.pIdxs['State']]['value'] = $scope.vState;
                                     $scope.delay = 0;
                                     $scope.cnt++;
-                                    $.toaster('无法找到合适港口!', 'Missing', 'warning')
+                                    $.toaster('此次交易配送失败!', 'Missing', 'warning');
                                     // let isArriving = {
                                     //     name : "isArriving",
                                     //     type: 'boolean',
