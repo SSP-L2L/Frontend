@@ -6,5 +6,5 @@ tmp
 .DS_Store
 .idea
 package-lock.json
-Test/
-User Manual/
+Test
+User Manual
