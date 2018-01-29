@@ -1,9 +1,9 @@
 {
-  "name": "angular-seed",
+  "name": "SPS",
   "private": true,
-  "version": "0.0.0",
-  "description": "A starter project for AngularJS",
-  "repository": "https://github.com/angular/angular-seed",
+  "version": "0.0.1",
+  "description": "Demo for Spare Parts Supply-chain management",
+  "repository": "https://github.com/sonnyhcl/frontend",
   "license": "MIT",
   "devDependencies": {
     "bower": "^1.7.7",
