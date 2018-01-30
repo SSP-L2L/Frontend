@@ -356,7 +356,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     'W_pid': event.data.W_Info.value.pid
                 };
                 $http.post(activityBasepath + "/coord/messages/Msg_StartVWC", data2VWC)
-                    .sucess(function (data) {
+                    .success(function (data) {
                         console.log("执行重新规划");
                     });
                 return false;
@@ -380,7 +380,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                             'W_pid': event.data.W_Info.value.pid
                         };
                         $http.post(activityBasepath + "/coord/messages/Msg_StartVWC", data2VWC)
-                            .sucess(function (data) {
+                            .success(function (data) {
                                 console.log("执行重新规划");
                             });
                         return false;
