@@ -1,0 +1,72 @@
+/*
+    该文档存放所有自定义的CSS
+*/
+
+/*body {*/
+    /*font-size: 12px;*/
+/*}*/
+
+#collapseOne button {
+    text-align: center;
+    margin: 5px;
+}
+
+#mapConsole {
+    box-shadow: 3px 4px 3px 0px silver;
+    position: relative;
+    width: 30%;
+    height: 100%;
+    border-radius: 5px;
+}
+
+#accordion {
+    width: 100%;
+    height: 100%;
+}
+
+#navbar button {
+    margin-right: 10px;
+}
+
+#navbar input {
+    margin-left: 5px;
+    margin-right: 5px;
+    border-radius: 5px;
+    width: 100px;
+}
+
+#logo {
+    height: 30px;
+    width: 40px;
+}
+
+#select {
+    width: 200px;
+    weight: 50px;
+}
+
+#costRatePanel {
+    position: absolute;
+    width: 270px;
+    height: auto;
+    bottom: 22%;
+    right: 5%;
+    z-index:99999;
+}
+
+#costRatePanel input {
+    /*border-radius: 5px;*/
+    /*margin: 5px;*/
+    /*border: none;*/
+    font-size: 10px;
+    /*width: 100px;*/
+    /*height: 30px;*/
+}
+#costRatePanel span {
+    /*margin: 5px;*/
+    /*border-radius: 5px;*/
+    /*border: none;*/
+    font-size: 5px;
+    /*width: 100px;*/
+    /*height: 20px;*/
+}

@@ -1,0 +1,182 @@
+<div id="mapContainer"></div>
+<nav id="navbar" class="navbar navbar-transparent navbar-fixed-top ">
+    <div class="container-fluid">
+        <a class="navbar-brand pull-left" href="" disabled="disabled">
+            <img alt="Brand" style="margin-top:-4px;" id="logo" class="img-thumbnai" src="images/logo.png">
+        </a>
+        <button type="button" id="start" class="btn btn-default navbar-btn pull-left" data-toggle="modal"
+                data-target="#startVesselModal">
+            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+        </button>
+        <button type="button" id='sendGoods' class="btn btn-default navbar-btn pull-left  " data-toggle="modal"
+                data-target="#sendGoodsModal">
+            <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span>
+        </button>
+        <button type="button" id="menubtn" class="btn btn-default navbar-btn pull-left" data-toggle="collapse"
+                data-target="#mapConsole">
+            <span class="glyphicon glyphicon-menu-hamburger"></span>
+        </button>
+        <span class="navbar-text label label-default pull-left">当前成本</span></td>
+        <input type="text" class="navbar-text" id="currentCost" readonly="readonly" ng-model="currentCost">
+        <span class="navbar-text label label-default pull-left">初始成本</span></td>
+        <input type="text" class="navbar-text" id="initialCost" readonly="readonly" ng-model="initialCost">
+    </div>
+</nav>
+<div class="modal" id="sendGoodsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    选择货物
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <select class="form-control input-sm" ng-model="sp_name">
+                        <option value="缸盖" selected="selected">缸盖</option>
+                        <option value="螺丝">螺丝</option>
+                        <option value="钢筋">钢筋</option>
+                    </select>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="apply()">
+                    提交更改
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal" id="startVesselModal" tabindex="-1" role="dialog" aria-labelledby="startVesselModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="startVesselModalLabel">
+                    选择轮班
+                </h4>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <tr>
+                        <td><span class="input-group-addon">船员:</span></td>
+                        <td><input id="sailor" class="form-control" ng-model="sailor"/></td>
+                    </tr>
+                    <tr>
+                        <td><span class="input-group-addon">船号:</span></td>
+                        <td><input id="V_id" class="form-control" ng-model="V_id"/></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="startVessel()">
+                    提交更改
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div id="mapConsole" class="collapse pull-left">
+    <div class="panel-group" id="accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
+                        data-target="#collapseOne" data-parent="accordion">控制台
+                </button>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <table class="table">
+                        <tr>
+                            <td><span class="input-group-addon">Manager:</span></td>
+                            <td><input type="text" class="form-control" id="startPointSearch" placeholder="请输入关键字"
+                                       value="宁波市"></td>
+                        </tr>
+                        <tr>
+                            <td><span class="input-group-addon">Supplier:</span></td>
+                            <td><input type="text" class="form-control" id="endPointSearch" placeholder="请输入关键字"
+                                       value="深圳市"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
+                        data-target="#collapseTwo" data-parent="accordion">控制台2
+                </button>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse">
+                <div class="panel-body">
+                    Test
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
+                        data-target="#collapseThree" data-parent="accordion">控制台3
+                </button>
+            </div>
+            <div id="collapseThree" class="panel-collapse collapse">
+                <div class="panel-body">
+                    Test
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
+                        data-target="#collapseFour" data-parent="accordion">控制台4
+                </button>
+            </div>
+            <div id="collapseFour" class="panel-collapse collapse">
+                <div class="panel-body">
+                    Test
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel panel-info" id="costRatePanel" style="display: none">
+    <div class="panel-heading">
+        <span class="panel-title">决策效益</span>
+    </div>
+    <div class="panel-body">
+        <div class="input-group input-group-sm">
+            <span class="input-group-addon">事件</span>
+            <input type="text" class="form-control" id="event" ng-model="event" readonly="readonly">
+        </div>
+        <div class="input-group input-group-sm">
+            <span class="input-group-addon">C1/C0</span>
+            <input type="text" class="form-control" id="C1C0" ng-model="C1C0" readonly="readonly">
+        </div>
+        <div class="input-group input-group-sm">
+            <span class="input-group-addon">C2/C1</span>
+            <input type="text" class="form-control" id="C2C1" ng-model="C2C1" readonly="readonly">
+        </div>
+        <div class="input-group input-group-sm">
+            <span class="input-group-addon">C2/C0</span>
+            <input type="text" class="form-control" id="C2C0" ng-model="C2C0" readonly="readonly">
+        </div>
+    </div>
+    <div class="panel-footer">
+        <span class="">C1/C0:决策前，变化前后效益对比</span>
+        <br>
+        <span class="">C2/C1:变化后，决策前后效益对比</span>
+        <br>
+        <span class="">C2/C0:决策后，变化前后效益对比</span>
+    </div>
+</div>
