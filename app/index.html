@@ -23,6 +23,7 @@
     <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main.css"/>
     <script rel="stylesheet" src="bower_components/jquery.toaster/jquery.toaster.js"></script>
+
     <script type="text/javascript"
             src="https://webapi.amap.com/maps?v=1.4.2&key=bc1219915440351613367e4764dc0a8c"></script>
     <script src="https://webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
@@ -48,19 +49,26 @@
 -->
 <script src="bower_components/angular/angular.js"></script>
 <script src="bower_components/angular-route/angular-route.js"></script>
-<script src="app.js"></script>
 <script src="bower_components/angular-local-storage/dist/angular-local-storage.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.js"></script>
+<!--<script src="bower_components/websocket/lib/websocket.js"></script>-->
+<!--<script src="bower_components/stomp-websocket/lib/stomp.min.js"></script>-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
+<script src="js/constants.js"></script>
+<script src="app.js"></script>
+<script src="js/services/websocketService.js"></script>
 <script src="js/services/mapServices.js"></script>
 <script src="js/services/processServices.js"></script>
 <script src="js/services/sessionService.js"></script>
 <script src="js/intercepters.js"></script>
-<script src="js/constants.js"></script>
 <script src="js/ship.js"></script>
 <script src="js/port_Position.js"></script>
 <script src="view1/windex.js"></script>
 <script src="components/version/version.js"></script>
 <script src="components/version/version-directive.js"></script>
 <script src="components/version/interpolate-filter.js"></script>
+<!--<script rel="stylesheet" src="bower_components/angular-websocket/dist/angular-websocket.js"></script>-->
+<!--<script src="bower_components/ng-stomp/dist/ng-stomp.standalone.min.js"></script>-->
 <!--<script type="text/javascript" src="https://webapi.amap.com/demos/js/liteToolbar.js"></script>-->
 </body>
 </html>

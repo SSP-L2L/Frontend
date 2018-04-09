@@ -1,6 +1,7 @@
 'use strict';
+//STOMP
 
-angular.module('myApp.view1', ['ngRoute'])
+angular.module('myApp.view1', ['ngRoute' ])
 
     .config(['$routeProvider', function ($routeProvider) {
         $routeProvider.when('/view1', {
@@ -34,155 +35,132 @@ angular.module('myApp.view1', ['ngRoute'])
             Session.createEventId();
         }
         MapService.initMap();
+
+
+
         // 入口 ：
         // 侦听流程实例，获取启动vessel-process Instances 的船号等信息
-        let params = {
-            params: {
-                processDefinitionKey: 'process_pool4'
+        // let params = {
+        //     params: {
+        //         processDefinitionKey: 'process_pool4'
+        //
+        //     }
+        // };
 
-            }
-        };
-        let promise = VesselProcessService.GetProcessInstance(params);
-        promise.then(function (data) {  // 调用承诺API获取数据 .resolve
-            console.log("promise : success ");
-            if (data.size !== 0) {
-                console.log("监听到车流程实例");
-                $scope.wInst = data.data[0];
-                console.log("$scope.wInst : " + $scope.wInst['id']);
-                let pid = data.data[0].id;
-                console.log(pid);
-                let promise1 = VesselProcessService.GetProcessVariablesById(pid);
-                promise1.then(function (data) {  // 调用承诺API获取数据 .resolve
-                    console.log("promise : success ");
-                    $scope.wVariables = data;
-                }, function (data) {  // 处理错误 .reject
-                    console.error("promise : error");
-                }).finally(function (data) {
-                    console.log("promise : finally ");
-                });
-            } else {
-                console.log("没有监听到流程实例！")
-            }
-        }, function (data) {  // 处理错误 .reject
-            console.error("promise : error");
-        }).finally(function (data) {
-            console.log("promise : test ");
-        });
-
-        let eventPromise = $interval(function () {
-            $http.get(activityBasepath + '/sevents')
-                .success(function (data) {
-                    // console.log(data);
-                    if (data.length > 0) {
-                        data.sort(function sortNumber(a, b) {
-                            return a.id - b.id;
-                        });
-                        for (let i = 0; i < data.length; i++) {
-                            let event = data[i];
-                            if ('W_RUN' === event.type) {
-                                console.log("W_RUN.pid", event.data);
-                                if (event.data.State === 'success') {
-                                    if ($scope.wagonMarker !== null) {
-                                        $scope.wagonMarker.hide();
-                                    }
-                                    $.toaster(event.data.Reason, 'Vessel', 'info');
-                                    $scope.W_START_Handle(event);
-                                } else if (event.data.State === 'fail') {
-                                    if (gpTimer !== null) {
-                                        $interval.cancel(gpTimer);
-                                    }
-                                    pathSimplifierIns.clearPathNavigators();
-                                    pathSimplifierIns.setData();
-                                    pathSimplifierIns4Route.clearPathNavigators();
-                                    pathSimplifierIns4Route.setData();
-                                    if ($scope.wagonMarker !== null) {
-                                        $scope.wagonMarker.hide();
-                                    }
-                                    $scope.wagonMarker = new AMap.Marker({
-                                        map: map,
-                                        icon: new AMap.Icon({
-                                            image: "/images/wagon64.png",
-                                            size: new AMap.Size(64, 64)
-                                        }),
-                                        position: new AMap.LngLat(event.data.W_Info.value.x_Coor, event.data.W_Info.value.y_Coor),
-                                        title: 'wagon'
-                                    });
-                                    // let isArriving = {
-                                    //     name : "isArriving",
-                                    //     type: 'boolean',
-                                    //     value: true,
-                                    //     scope: 'local'
-                                    // };
-                                    // $http.put(activityBasepath + '/zbq/variables/' + event.data.W_Info.value.pid + "/isArriving/complete", isArriving)
-                                    //     .success(function (data) {
-                                    //         $http.post(activityBasepath + '/zbq/tasks/Running')
-                                    //             .success(function(data){
-                                    //                 console.log("Running 结束！");
-                                    //             })
-                                    //     });
-                                    $.toaster('审批时间过长，无法找到合适港口!', 'Admin', 'warning')
-                                } else if(event.data.State === 'Missing'){
-                                    if ($scope.wagonMarker !== null) {
-                                        $scope.wagonMarker.hide();
-                                    }
-                                    console.log("navi1Posion:",navg1Posion.getLng(),navg1Posion.getLat());
-                                    $scope.wagonMarker = new AMap.Marker({
-                                        map: map,
-                                        icon: new AMap.Icon({
-                                            image: "/images/wagon64.png",
-                                            size: new AMap.Size(64, 64)
-                                        }),
-                                        position: new AMap.LngLat(navg1Posion.getLng(), navg1Posion.getLat()),
-                                        title: 'wagon'
-                                    });
-                                    if (gpTimer !== null) {
-                                        $interval.cancel(gpTimer);
-                                    }
-                                    pathSimplifierIns.clearPathNavigators();
-                                    pathSimplifierIns.setData();
-                                    pathSimplifierIns4Route.clearPathNavigators();
-                                    pathSimplifierIns4Route.setData();
-                                    //修改vState
-                                    $scope.isMissOrMeet = true;
-                                    $scope.vState = "voyaging";
-                                    $scope.pvars[$scope.pIdxs['State']]['value'] = $scope.vState;
-                                    $scope.delay = 0;
-                                    $scope.cnt++;
-                                    $.toaster('此次交易配送失败!', 'Missing', 'warning');
-                                    // let isArriving = {
-                                    //     name : "isArriving",
-                                    //     type: 'boolean',
-                                    //     value: true,
-                                    //     scope: 'local'
-                                    // };
-                                    // $http.put(activityBasepath + '/zbq/variables/' + event.data.W_Info.value.pid + "/isArriving/complete", isArriving)
-                                    //     .success(function (data) {
-                                    //         $http.post(activityBasepath + '/zbq/tasks/Running')
-                                    //             .success(function(data){
-                                    //                 console.log("Running 结束！");
-                                    //             })
-                                    //     });
-                                }else if (event.data.State === 'Meeting'){
-                                    $scope.isMissOrMeet = true;
-                                    $scope.vState = 'voyaging';
-                                    $scope.delay = 0;
-                                    $scope.pvars[$scope.pIdxs['State']]['value'] = $scope.vState;
-                                    console.log("meeting state!" , $scope.cnt);
-                                    $scope.cnt++;
-                                    console.log("meeting state!" , $scope.cnt);
-                                    $.toaster('车船相遇，完成交货!', 'Admin', 'success')
-                                }else{
-                                    // $.toaster('车船相遇，完成交货!', 'Admin', 'success')
-                                    console.log("other  state!");
-                                }
-                            }
-                            if ('MSC_MeetWeightCond' === event.type) {
-                                $scope.MSC_MeetWeightCond_Handle(event);
-                            }
-                        }
-                    }
-                });
-        }, 1000);
+        // let eventPromise = $interval(function () {
+        //     $http.get(activityBasepath + '/sevents')
+        //         .success(function (data) {
+        //             // console.log(data);
+        //             if (data.length > 0) {
+        //                 data.sort(function sortNumber(a, b) {
+        //                     return a.id - b.id;
+        //                 });
+        //                 for (let i = 0; i < data.length; i++) {
+        //                     let event = data[i];
+        //                     if ('W_RUN' === event.type) {
+        //                         console.log("W_RUN.pid", event.data);
+        //                         if (event.data.State === 'success') {
+        //                             if ($scope.wagonMarker !== null) {
+        //                                 $scope.wagonMarker.hide();
+        //                             }
+        //                             $.toaster(event.data.Reason, 'Vessel', 'info');
+        //                             $scope.W_START_Handle(event);
+        //                         } else if (event.data.State === 'fail') {
+        //                             if (gpTimer !== null) {
+        //                                 $interval.cancel(gpTimer);
+        //                             }
+        //                             pathSimplifierIns.clearPathNavigators();
+        //                             pathSimplifierIns.setData();
+        //                             pathSimplifierIns4Route.clearPathNavigators();
+        //                             pathSimplifierIns4Route.setData();
+        //                             if ($scope.wagonMarker !== null) {
+        //                                 $scope.wagonMarker.hide();
+        //                             }
+        //                             $scope.wagonMarker = new AMap.Marker({
+        //                                 map: map,
+        //                                 icon: new AMap.Icon({
+        //                                     image: "/images/wagon64.png",
+        //                                     size: new AMap.Size(64, 64)
+        //                                 }),
+        //                                 position: new AMap.LngLat(event.data.W_Info.value.x_Coor, event.data.W_Info.value.y_Coor),
+        //                                 title: 'wagon'
+        //                             });
+        //                             // let isArriving = {
+        //                             //     name : "isArriving",
+        //                             //     type: 'boolean',
+        //                             //     value: true,
+        //                             //     scope: 'local'
+        //                             // };
+        //                             // $http.put(activityBasepath + '/zbq/variables/' + event.data.W_Info.value.pid + "/isArriving/complete", isArriving)
+        //                             //     .success(function (data) {
+        //                             //         $http.post(activityBasepath + '/zbq/tasks/Running')
+        //                             //             .success(function(data){
+        //                             //                 console.log("Running 结束！");
+        //                             //             })
+        //                             //     });
+        //                             $.toaster('审批时间过长，无法找到合适港口!', 'Admin', 'warning')
+        //                         } else if(event.data.State === 'Missing'){
+        //                             if ($scope.wagonMarker !== null) {
+        //                                 $scope.wagonMarker.hide();
+        //                             }
+        //                             console.log("navi1Posion:",navg1Posion.getLng(),navg1Posion.getLat());
+        //                             $scope.wagonMarker = new AMap.Marker({
+        //                                 map: map,
+        //                                 icon: new AMap.Icon({
+        //                                     image: "/images/wagon64.png",
+        //                                     size: new AMap.Size(64, 64)
+        //                                 }),
+        //                                 position: new AMap.LngLat(navg1Posion.getLng(), navg1Posion.getLat()),
+        //                                 title: 'wagon'
+        //                             });
+        //                             if (gpTimer !== null) {
+        //                                 $interval.cancel(gpTimer);
+        //                             }
+        //                             pathSimplifierIns.clearPathNavigators();
+        //                             pathSimplifierIns.setData();
+        //                             pathSimplifierIns4Route.clearPathNavigators();
+        //                             pathSimplifierIns4Route.setData();
+        //                             //修改vState
+        //                             $scope.isMissOrMeet = true;
+        //                             $scope.vState = "voyaging";
+        //                             $scope.pvars[$scope.pIdxs['State']]['value'] = $scope.vState;
+        //                             $scope.delay = 0;
+        //                             $scope.cnt++;
+        //                             $.toaster('此次交易配送失败!', 'Missing', 'warning');
+        //                             // let isArriving = {
+        //                             //     name : "isArriving",
+        //                             //     type: 'boolean',
+        //                             //     value: true,
+        //                             //     scope: 'local'
+        //                             // };
+        //                             // $http.put(activityBasepath + '/zbq/variables/' + event.data.W_Info.value.pid + "/isArriving/complete", isArriving)
+        //                             //     .success(function (data) {
+        //                             //         $http.post(activityBasepath + '/zbq/tasks/Running')
+        //                             //             .success(function(data){
+        //                             //                 console.log("Running 结束！");
+        //                             //             })
+        //                             //     });
+        //                         }else if (event.data.State === 'Meeting'){
+        //                             $scope.isMissOrMeet = true;
+        //                             $scope.vState = 'voyaging';
+        //                             $scope.delay = 0;
+        //                             $scope.pvars[$scope.pIdxs['State']]['value'] = $scope.vState;
+        //                             console.log("meeting state!" , $scope.cnt);
+        //                             $scope.cnt++;
+        //                             console.log("meeting state!" , $scope.cnt);
+        //                             $.toaster('车船相遇，完成交货!', 'Admin', 'success')
+        //                         }else{
+        //                             // $.toaster('车船相遇，完成交货!', 'Admin', 'success')
+        //                             console.log("other  state!");
+        //                         }
+        //                     }
+        //                     if ('MSC_MeetWeightCond' === event.type) {
+        //                         $scope.MSC_MeetWeightCond_Handle(event);
+        //                     }
+        //                 }
+        //             }
+        //         });
+        // }, 1000);
         $scope.W_START_Handle = function (event) {
             console.log("W_START_Handle执行");
             MapService.doNavigation(event, ZoomInVal);
@@ -212,32 +190,16 @@ angular.module('myApp.view1', ['ngRoute'])
             $.toaster("货物不符合部分港口的限重！", 'Vessel', 'warning');
         };
         $scope.startVessel = function () {
-            let param = {
-                params: {
-                    name: 'Vessel'
-                }
+            var  params = {
+                sailor: $scope.sailor,
+                vId: $scope.V_id ,
+                defaultDelayHour:5,
+                zoomInVal:1000
             };
-            $http.get(activityBasepath + "/repository/process-definitions", param)
-                .success(function (data) {
-                    let pdArray = data.data;
-                    let curPd = pdArray[pdArray.length - 1];
-                    let processData = {
-                        processDefinitionId: curPd.id,
-                        name: 'Vessel',
-                        values: {
-                            sailor: $scope.sailor,
-                            V_id: $scope.V_id
-                        }
-                    };
-                    $http.post(activityBasepath + "/rest/process-instances", processData)
-                        .success(function (data) {
-                            let pid = data.id;
-                            VesselProcessService.GetProcessVariablesById(pid)
-                                .then(function (data) {
-                                    $scope.voyaging(pid, $scope.V_id, data);
-                                });
-                        });
 
+            $http.post(activityBasepath+"/vessel/process-instances/Vessel" , params)
+                .success(function(data){
+                    console.log("Start Vessel process ...", data);
                 });
         };
 
