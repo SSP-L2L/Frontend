@@ -5,7 +5,7 @@ App.factory('MapFactory', function ($http) {
         setTraffic: function (pathSimplifierIns, searchTimeData, searchSpeedData,esTime,index) {
             const Min = 0;
             const Max = 100;
-            var rand = Min + Math.round(Math.random() * (Max - Min));
+            let rand = Min + Math.round(Math.random() * (Max - Min));
             if (rand <= 50) {
                 pathSimplifierIns.getRenderOptions().pathLineStyle.strokeStyle = 'green';
             }
@@ -28,9 +28,9 @@ App.factory('MapFactory', function ($http) {
             return esTime;
         },
         newGuid: function () {
-            var guid = "";
-            for (var i = 1; i <= 32; i++) {
-                var n = Math.floor(Math.random() * 16.0).toString(16);
+            let guid = "";
+            for (let i = 1; i <= 32; i++) {
+                let n = Math.floor(Math.random() * 16.0).toString(16);
                 guid += n;
                 if ((i === 8) || (i === 12) || (i === 16) || (i === 20))
                     guid += "-";
@@ -59,24 +59,24 @@ App.factory('MapFactory', function ($http) {
         }
     }
 });
-var pathSimplifierIns;  //导航实例
-var pathSimplifierIns4Route;
-var map;  //地图实例
-var port32;  //使用中的港口，icon类
-var uselessPort32;   //未使用中的港口，icon类
-var portMarkers = []; //港口点标记集合，Marker类集合
-var vids = {};
-var port = [];
-var target;// 目标港口是第一个
-var gpTimer;
-var manager;
-var supplier;
-var navg1Posion;
+let pathSimplifierIns;  //导航实例
+let pathSimplifierIns4Route;
+let map;  //地图实例
+let port32;  //使用中的港口，icon类
+let uselessPort32;   //未使用中的港口，icon类
+let portMarkers = []; //港口点标记集合，Marker类集合
+let vids = {};
+let port = [];
+let target;// 目标港口是第一个
+let gpTimer;
+let manager;
+let supplier;
+let navg1Posion;
 App.service('MapService', function (MapFactory, $http, Session, VesselProcessService, $interval) {
 
-        // vids['413362260'] = data_1;// 船号-->位置信息
-        // port['413362260'] = port_1.slice(0);// 船号-->港口列表
-        // target = port_1[0];// 目标港口是第一个
+        vids['413362260'] = data_1;// 船号-->位置信息
+        port['413362260'] = port_1.slice(0);// 船号-->港口列表
+        target = port_1[0];// 目标港口是第一个
 
         this.initMap = function () {
             /*
@@ -105,15 +105,15 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             /*
             加载搜索
              */
-            AMap.plugin(['AMap.Autocompvare', 'AMap.PlaceSearch'], function () {
-                var autoOptions_start = {
+            AMap.plugin(['AMap.Autocomplete', 'AMap.PlaceSearch'], function () {
+                let autoOptions_start = {
                     //城市，默认全国
                     city: "",
                     //可选参数，用来指定一个input输入框，设定之后，在input输入文字将自动生成下拉选择列表
                     input: "startPointSearch"
                 };
-                var autocompvare_start = new AMap.Autocompvare(autoOptions_start);
-                var placeSearch_start = new AMap.PlaceSearch({
+                let autocomplete_start = new AMap.Autocomplete(autoOptions_start);
+                let placeSearch_start = new AMap.PlaceSearch({
                     //兴趣点城市,默认全国
                     city: '',
                     //当指定此参数后，搜索结果的标注、线路等均会自动添加到此地图上。可选值
@@ -122,7 +122,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     autoFitView: false,
 
                 });
-                AMap.event.addListener(autocompvare_start, "select", function (e) {
+                AMap.event.addListener(autocomplete_start, "select", function (e) {
                     //adcode区域编码
                     placeSearch_start.setCity(e.poi.adcode);
                     placeSearch_start.search(e.poi.name, function (status, result) {
@@ -135,24 +135,24 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 });
 
 
-                var autoOptions_end = {
+                let autoOptions_end = {
                     city: "",
                     input: "endPointSearch"
                 };
-                var autocompvare_end = new AMap.Autocompvare(autoOptions_end);
-                var placeSearch_end = new AMap.PlaceSearch({
+                let autocomplete_end = new AMap.Autocomplete(autoOptions_end);
+                let placeSearch_end = new AMap.PlaceSearch({
                     city: '',
                     map: '',
                     autoFitView: false,
                 });
-                AMap.event.addListener(autocompvare_end, "select", function (e) {
+                AMap.event.addListener(autocomplete_end, "select", function (e) {
                     placeSearch_end.setCity(e.poi.adcode);
                     placeSearch_end.search(e.poi.name, function (status, result) {
                         if (supplier !== undefined) {
                             supplier.hide();
                         }
                         supplier = MapFactory.setSupplier(result.poiList.pois[0].name, result.poiList.pois[0].location);
-                        var supplierData = {
+                        let supplierData = {
                             slname: e.poi.name,
                             x_coor:result.poiList.pois[0].location.getLng(),
                             y_coor:result.poiList.pois[0].location.getLat()
@@ -277,7 +277,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                                 },
                                 {
                                     duration: settings.toast.fade.out,
-                                    compvare: callback
+                                    complete: callback
                                 });
                         }
                     },
@@ -292,41 +292,41 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             pathSimplifierIns4Route.clearPathNavigators();
             pathSimplifierIns4Route.setData();
 
-            var eEnd = Date.parse(event.data.vDestPort.EEnd);
-            var esTime = Date.parse(event.data.wDestPort.esTime);
+            let eEnd = Date.parse(event.data.vDestPort.EEnd);
+            let esTime = Date.parse(event.data.wDestPort.esTime);
             //获取路径
             if (gpTimer !== null) {
                 $interval.cancel(gpTimer);
             }
-            var route = event.data.pathResult;
-            var path = route.paths[0];
-            var tempPathData = [];
-            var pathData = [];
-            var searchPathData = [];
-            var searchDistanceData = [];
-            var searchTimeData = [];
-            var searchSpeedData = [];
-            for (var i = 0; i < path.steps.length; i++) {
+            let route = event.data.pathResult;
+            let path = route.paths[0];
+            let tempPathData = [];
+            let pathData = [];
+            let searchPathData = [];
+            let searchDistanceData = [];
+            let searchTimeData = [];
+            let searchSpeedData = [];
+            for (let i = 0; i < path.steps.length; i++) {
                 tempPathData.push(path.steps[i].polyline);
                 searchDistanceData.push(path.steps[i].distance);
                 searchTimeData.push(path.steps[i].duration);
                 searchSpeedData.push(path.steps[i].distance / path.steps[i].duration * 3.6 * ZoomInVal);
             }
-            for (var i = 0; i < tempPathData.length; i++) {
-                var tempString = tempPathData[i].split(';');
+            for (let i = 0; i < tempPathData.length; i++) {
+                let tempString = tempPathData[i].split(';');
                 searchPathData[i] = [];
-                for (var j = 0; j < tempString.length; j++) {
-                    var temp = tempString[j].split(',');
+                for (let j = 0; j < tempString.length; j++) {
+                    let temp = tempString[j].split(',');
                     searchPathData[i].push(new AMap.LngLat(temp[0], temp[1]));
                     pathData.push(new AMap.LngLat(temp[0], temp[1]));
                 }
             }
             //启动Navigation
-            var index = 0;
-            // var totalTime = 0;
-            var NavigationEvent = event;
-            var expandPathFlag = true;
-            var NavigationData = {}; //
+            let index = 0;
+            // let totalTime = 0;
+            let NavigationEvent = event;
+            let expandPathFlag = true;
+            let NavigationData = {}; //
             pathSimplifierIns4Route.setData([{
                 name: '总路线',
                 path: pathData.slice(0)
@@ -337,7 +337,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             }];
             pathSimplifierIns.setData(NavigationData);
             //对第一条线路（即索引 0）创建一个巡航器
-            var navg1 = pathSimplifierIns.createPathNavigator(0, {
+            let navg1 = pathSimplifierIns.createPathNavigator(0, {
                 //循环播放
                 loop: false,
             });
@@ -350,7 +350,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                 pathSimplifierIns.clearPathNavigators();
                 pathSimplifierIns4Route.clearPathNavigators();
                 $.toaster('时间不充足,需要重新规划路径!', 'Wagon', 'warning');
-                var data2VWC = {
+                let data2VWC = {
                     'msgType': "msg_UpdateDest",
                     'V_pid': event.data.V_pid,
                     'W_pid': event.data.W_Info.value.pid
@@ -364,8 +364,8 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
             navg1.setSpeed(searchSpeedData[index]);
             // totalTime += searchTimeData[index];
             //flag是是否做路程扩展的判断标志
-            var expandPath = function () {
-                var doExpand = function () {
+            let expandPath = function () {
+                let doExpand = function () {
                     index++;
                     esTime=MapFactory.setTraffic(pathSimplifierIns, searchTimeData, searchSpeedData, esTime, index);
                     if (esTime > eEnd) {
@@ -374,7 +374,7 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                         }
                         navg1.stop();
                         $.toaster('时间不充足,需要重新规划路径!', 'Warning', 'warning');
-                        var data2VWC = {
+                        let data2VWC = {
                             'msgType': "msg_UpdateDest",
                             'V_pid': event.data.V_pid,
                             'W_pid': event.data.W_Info.value.pid
@@ -404,14 +404,14 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     if (index + 1 > searchPathData.length - 1) {
                         $interval.cancel(gpTimer);
                         $.toaster("车已到达指定地点！"+event.data.wDestPort.pname, 'Wagon', 'success');
-                        var isArriving = {
+                        let isArriving = {
                             name : "isArriving",
                             type: 'boolean',
                             value: true,
                             scope: 'local'
                         };
 
-                        $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.value.pid + "/isArriving/compvare", isArriving)
+                        $http.put(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.value.pid + "/isArriving/complete", isArriving)
                             .success(function (data) {
                                 console.log("车已到达指定地点",data);
                                 console.log("目标地点:",event.data.wDestPort.pname);
@@ -431,8 +431,8 @@ App.service('MapService', function (MapFactory, $http, Session, VesselProcessSer
                     setTimeout(expandPath, 200);
                 }
             };
-            var getPosition = function () {
-                var position = navg1.getPosition();
+            let getPosition = function () {
+                let position = navg1.getPosition();
                 navg1Posion=position;
                 // console.log("navi1Posion:",navg1Posion.getLng(),navg1Posion.getLat());
                 $http.get(activityBasepath + '/zbq/variables/' + NavigationEvent.data.W_Info.value.pid + "/W_Info")

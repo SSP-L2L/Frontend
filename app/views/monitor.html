@@ -16,6 +16,13 @@
                 data-target="#mapConsole">
             <span class="glyphicon glyphicon-menu-hamburger"></span>
         </button>
+        <span class="navbar-text label label-default pull-left">当前成本</span></td>
+        <input type="text" class="navbar-text" id="currentCost" readonly="readonly" ng-model="currentCost">
+        <span class="navbar-text label label-default pull-left">初始成本</span></td>
+        <input type="text" class="navbar-text" id="initialCost" readonly="readonly" ng-model="initialCost">
+    </div>
+    <div>
+
     </div>
 </nav>
 <div class="modal" id="sendGoodsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -68,7 +75,7 @@
                     </tr>
                     <tr>
                         <td><span class="input-group-addon">船号:</span></td>
-                        <td><input id="V_id" class="form-control" ng-model="V_id"/></td>
+                        <td><input id="V_id" class="form-control" ng-model="vid"/></td>
                     </tr>
                 </table>
             </div>
@@ -83,11 +90,11 @@
     </div><!-- /.modal -->
 </div>
 <div id="mapConsole" class="collapse pull-left">
-    <div class="panel-group" id="accordion">
-        <div class="panel panel-default">
+    <div class="panel-group" id="accordion" >
+        <div class="panel panel-default" >
             <div class="panel-heading">
                 <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
-                        data-target="#collapseOne" data-parent="accordion">控制台
+                        data-target="#collapseOne" data-parent="accordion">Supplier-Manager
                 </button>
             </div>
             <div id="collapseOne" class="panel-collapse collapse">
@@ -110,12 +117,33 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <button type="button" class="btn btn-primary btn-block" data-toggle="collapse"
-                        data-target="#collapseTwo" data-parent="accordion">控制台2
+                        data-target="#collapseTwo" data-parent="accordion">Vessel
                 </button>
             </div>
             <div id="collapseTwo" class="panel-collapse collapse">
                 <div class="panel-body">
-                    Test
+                    <table class="table">
+                        <tr>
+                            <td><span class="input-group-addon">延误:</span></td>
+                            <td><input type="number" class="form-control" id="delayHour" placeholder="请输入关键字"
+                                       value=0></td>
+                        </tr>
+                        <tr>
+                            <td><span class="input-group-addon">延期:</span></td>
+                            <td><input type="number" class="form-control" id="postponeHour" placeholder="请输入关键字"
+                                       value=0></td>
+                        </tr>
+                        <tr>
+                            <td><span class="input-group-addon">船号:</span></td>
+                            <td><input type="text" class="form-control" id="dpVid" placeholder="请输入关键字"
+                                       value="413362260"></td>
+                        </tr>
+                    </table>
+                    <button type="button" class="btn btn-primary pull-right" id = "dxyBtn"  data-toggle="collapse"
+                            data-target="#collapseTwo"   ng-click="setDxy()">
+                            OK
+                    </button>
+
                 </div>
             </div>
         </div>

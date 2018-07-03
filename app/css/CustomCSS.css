@@ -14,7 +14,7 @@ body {
 #mapConsole {
     box-shadow: 3px 4px 3px 0px silver;
     position: relative;
-    width: 30%;
+    width: 15%;
     height: 100%;
     border-radius: 4px;
 }
@@ -36,3 +36,8 @@ body {
     width: 200px;
     weight:50px;
 }
+#dxyBtn{
+    margin-right: 30px;
+    width:50px;
+}
+
